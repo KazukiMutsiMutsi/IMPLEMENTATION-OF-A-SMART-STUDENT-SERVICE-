@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "INFORM — Smart Student Platform",
+  title: "INFORM — Self-Service Student Information Kiosk",
   description:
-    "The all-in-one AI-powered platform that helps students study smarter, stay organized, and achieve more.",
+    "Access your academic records, enrollment, grades, and more — anytime, anywhere on campus.",
 };
 
 export default function RootLayout({
