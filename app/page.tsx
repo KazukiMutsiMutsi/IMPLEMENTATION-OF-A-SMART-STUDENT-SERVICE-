@@ -89,7 +89,7 @@ export default function KioskHome() {
             <span className="text-green-600 text-xs font-medium">System Online</span>
           </div>
           <Link
-            href="/login"
+            href="/admin/login"
             className="text-slate-500 hover:text-slate-800 text-xs border border-slate-200 hover:border-slate-400 px-3 py-1.5 rounded-lg transition-all bg-white/60"
           >
             Admin Access
