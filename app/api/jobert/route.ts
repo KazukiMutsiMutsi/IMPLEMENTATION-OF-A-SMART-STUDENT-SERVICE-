@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-/* ── Ollama REST endpoint (local) ── */
-const OLLAMA_URL = "http://localhost:11434/api/generate";
+/* ── Gemini REST endpoint ── */
+const GEMINI_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 
 /* ── JOBERT system prompt ── */
 const SYSTEM_PROMPT = `You are JOBERT, the official AI assistant of the INFORM Student Information System at Benedicto College (Cebu, Philippines).
@@ -47,56 +50,120 @@ Rules:
 - Format lists with line breaks for readability
 - Always refer to yourself as JOBERT`;
 
+/* ── Built-in fallback responses (used when no API key is set) ── */
+function getFallbackReply(message: string): string {
+  const msg = message.toLowerCase();
+
+  if (msg.includes("log in") || msg.includes("login") || msg.includes("sign in")) {
+    return "To log in to INFORM:\n\n1. Go to the login page\n2. Enter your Student ID (9-digit number, e.g. 202400001)\n3. Enter your password\n4. Click \"Access Portal\"\n\nDemo accounts:\n• 202400001 / jamie123\n• 202400002 / maria456\n• 202400003 / carlo789\n\nNeed more help? Contact IT Help Desk at helpdesk@inform.edu or Room 010 Admin Bldg.";
+  }
+  if (msg.includes("password") || msg.includes("forgot")) {
+    return "If you forgot your password:\n\n1. Contact the IT Help Desk at helpdesk@inform.edu\n2. Visit Room 010, Admin Building (Mon-Fri, 8AM-5PM)\n3. Bring your school ID for verification\n\nFor demo accounts, passwords are: jamie123, maria456, carlo789, ana2024, luis2024.";
+  }
+  if (msg.includes("grade") || msg.includes("gwa") || msg.includes("average")) {
+    return "Philippine Grading Scale at Benedicto College:\n\n• 1.00 = 99-100% (Highest)\n• 1.25 = 96-98%\n• 1.50 = 93-95%\n• 1.75 = 90-92%\n• 2.00 = 87-89%\n• 2.25 = 84-86%\n• 2.50 = 81-83%\n• 2.75 = 78-80%\n• 3.00 = 75-77% (Passing)\n• 5.00 = Below 75% (Failed)\n\nYour GWA is the average of all your subject grades.";
+  }
+  if (msg.includes("tuition") || msg.includes("pay") || msg.includes("fee")) {
+    return "To pay your tuition fees:\n\n1. Go to the Cashier's Office — Room 102, Admin Building\n2. Hours: Mon-Fri, 8AM-4PM\n3. You can also pay via online banking (ask the Cashier for details)\n\nFee breakdown (per semester):\n• Tuition Fee: ₱18,500\n• Miscellaneous: ₱2,200\n• Laboratory: ₱1,500\n• Library: ₱500\n• Student Activity: ₱800\n• ID/Registration: ₱350";
+  }
+  if (msg.includes("enrollment") || msg.includes("enroll")) {
+    return "Enrollment Information:\n\n• Status: Currently OPEN\n• Deadline: June 15, 2026\n• Where: Registrar's Office, Room 101 Admin Bldg\n• Hours: Mon-Fri, 8AM-5PM\n\nRequirements:\n• Previous semester grades\n• Cleared balance (no outstanding fees)\n• Accomplished enrollment form\n\nContact: registrar@inform.edu";
+  }
+  if (msg.includes("schedule") || msg.includes("class") || msg.includes("timetable")) {
+    return "Your class schedule is available in the Dashboard under \"View Schedule\".\n\nAcademic Calendar:\n• 1st Semester: Aug 2025 – Jan 2026\n• 2nd Semester: Feb – Jun 2026\n\nClasses run Mon-Fri. Check your specific timetable in the Schedule section of your portal.";
+  }
+  if (msg.includes("library") || msg.includes("book") || msg.includes("borrow")) {
+    return "Library Services:\n\n• Location: Library Building, Ground Floor\n• Hours: Mon-Fri, 7AM-6PM\n• Borrowing limit: 3 books at a time\n• Loan period: 7 days\n• Late return penalty: ₱5/day per book\n\nTo borrow: Present your school ID at the library counter.\nTo return: Bring the book to the same counter before the due date.";
+  }
+  if (msg.includes("tor") || msg.includes("transcript") || msg.includes("document") || msg.includes("certificate")) {
+    return "Document Requests (Registrar's Office, Room 101):\n\n• Transcript of Records (TOR): ₱150, 3-5 working days\n• Certificate of Enrollment: ₱50, same day\n• Good Moral Certificate: ₱50, 1-2 working days\n• Diploma: Available after graduation clearance\n\nBring your school ID and fill out a request form. Contact: registrar@inform.edu";
+  }
+  if (msg.includes("scholarship")) {
+    return "Available Scholarships at Benedicto College:\n\n1. Academic Excellence Scholarship\n   • For students with GWA of 1.50 or higher\n   • Covers 50-100% of tuition\n\n2. Financial Assistance Grant\n   • For students with financial need\n   • Submit income certificate from parents\n\n3. Government Voucher (SHS)\n   • For incoming Grade 11 from public schools\n   • No tuition fee for SY 2026-2027\n\nApply at the Registrar's Office.";
+  }
+  if (msg.includes("contact") || msg.includes("office") || msg.includes("help")) {
+    return "Benedicto College Contact Information:\n\n📍 Registrar's Office\n   Room 101, Admin Building\n   registrar@inform.edu\n   Mon-Fri, 8AM-5PM\n\n💻 IT Help Desk\n   Room 010, Admin Building\n   helpdesk@inform.edu\n\n💰 Cashier\n   Room 102, Admin Building\n   Mon-Fri, 8AM-4PM\n\n📞 032 345 6873\n📱 +63 908 899 8600\n🌐 benedictocollege.edu.ph";
+  }
+  if (msg.includes("id") && (msg.includes("lost") || msg.includes("replace") || msg.includes("replacement"))) {
+    return "Lost ID Replacement:\n\n1. Go to the Registrar's Office (Room 101, Admin Bldg)\n2. Fill out a lost ID form\n3. Pay the replacement fee: ₱150 at the Cashier\n4. Present your receipt to the Registrar\n5. New ID will be ready in 3-5 working days";
+  }
+  if (msg.includes("demo") || msg.includes("account") || msg.includes("test")) {
+    return "Demo Student Accounts for Testing:\n\n• 202400001 / jamie123 — Jamie Santos, BSCS Year 2\n• 202400002 / maria456 — Maria Reyes, BSED Year 1\n• 202400003 / carlo789 — Carlo Dela Cruz, BSBA Year 3\n• 202400004 / ana2024 — Ana Villanueva, BSN Year 2\n• 202400005 / luis2024 — Luis Fernandez, BSCS Year 4";
+  }
+
+  return "I'm JOBERT, your INFORM assistant at Benedicto College! I can help you with:\n\n• Logging in to INFORM\n• Grades and GWA\n• Class schedule\n• Tuition fees and payments\n• Library services\n• Enrollment\n• Document requests\n• Scholarships\n• Contact information\n\nWhat would you like to know?";
+}
+
 export async function POST(req: NextRequest) {
   try {
-    console.log("=== JOBERT API CALLED (Ollama) ===");
-    
+    console.log("=== JOBERT API CALLED (Gemini) ===");
+
     const { message, history } = await req.json();
     console.log("Message received:", message);
 
-    /* build conversation history for Ollama */
-    const conversationHistory = (history || [])
+    /* ── No API key: use built-in fallback ── */
+    if (!GEMINI_API_KEY) {
+      console.log("No GEMINI_API_KEY set — using fallback responses");
+      const reply = getFallbackReply(message);
+      return NextResponse.json({ reply });
+    }
+
+    /* ── Build conversation turns for Gemini ── */
+    const historyTurns = (history || [])
       .slice(-6)
-      .map((m: { role: string; text: string }) => `${m.role === "user" ? "User" : "Assistant"}: ${m.text}`)
-      .join("\n");
+      .filter((m: { role: string; text: string }) => m.text?.trim())
+      .map((m: { role: string; text: string }) => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.text }],
+      }));
 
-    const prompt = `${SYSTEM_PROMPT}
+    const requestBody = {
+      system_instruction: {
+        parts: [{ text: SYSTEM_PROMPT }],
+      },
+      contents: [
+        ...historyTurns,
+        { role: "user", parts: [{ text: message }] },
+      ],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1024,
+      },
+    };
 
-Conversation history:
-${conversationHistory}
-
-User: ${message}
-Assistant:`;
-
-    console.log("Sending request to Ollama API...");
-    const response = await fetch(OLLAMA_URL, {
+    console.log("Sending request to Gemini API...");
+    const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "mistral",
-        prompt: prompt,
-        stream: false,
-        temperature: 0.7,
-      }),
-      signal: AbortSignal.timeout(120000), // 2 minute timeout
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(30000),
     });
 
-    console.log("Ollama API response status:", response.status);
+    console.log("Gemini API response status:", response.status);
 
     if (!response.ok) {
       const err = await response.text();
-      console.error("Ollama API error response:", err);
-      return NextResponse.json({ error: "Ollama API error", details: err }, { status: 500 });
+      console.error("Gemini API error:", err);
+      /* Fall back to built-in reply on API error */
+      return NextResponse.json({ reply: getFallbackReply(message) });
     }
 
     const data = await response.json();
-    console.log("Ollama API response received");
-    
-    const text = data?.response ?? "I'm sorry, I couldn't generate a response. Please try again.";
+    const text: string =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text ??
+      getFallbackReply(message);
 
     return NextResponse.json({ reply: text.trim() });
   } catch (err) {
     console.error("JOBERT route error:", err);
-    return NextResponse.json({ error: "Internal server error", details: String(err) }, { status: 500 });
+    /* Return a helpful fallback instead of a 500 error */
+    try {
+      const { message } = await req.json().catch(() => ({ message: "" }));
+      return NextResponse.json({ reply: getFallbackReply(message ?? "") });
+    } catch {
+      return NextResponse.json({
+        reply: "I'm having trouble right now. Please try again in a moment.",
+      });
+    }
   }
 }

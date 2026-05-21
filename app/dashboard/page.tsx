@@ -42,21 +42,25 @@ function JobertChat({ initialPrompt }: { initialPrompt?: string }) {
       <button className="chat-fab" onClick={() => setOpen(!open)}>
         {open
           ? <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" width="22" height="22"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          : <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" width="26" height="26"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10a9.96 9.96 0 0 1-5.06-1.37L2 22l1.37-4.94A9.96 9.96 0 0 1 2 12 10 10 0 0 1 12 2"/><path d="M8 10h.01M12 10h.01M16 10h.01" strokeLinecap="round"/></svg>
+          : <img src="/jobert-avatar.png" alt="JOBERT" style={{ width: 48, height: 48, objectFit: "cover", objectPosition: "center top", borderRadius: "50%" }} />
         }
         {!open && <span className="position-absolute top-0 end-0 rounded-circle bg-success border border-white" style={{ width: 13, height: 13 }} />}
       </button>
       {open && (
         <div className="chat-panel">
           <div className="px-4 py-3 d-flex align-items-center gap-3 flex-shrink-0" style={{ background: "linear-gradient(135deg,#2563eb,#1d4ed8)" }}>
-            <div className="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width: 36, height: 36, fontSize: 13 }}>AI</div>
-            <div className="flex-grow-1"><div className="text-white fw-bold small">JOBERT</div><div className="text-white-50" style={{ fontSize: 11 }}>Powered by Ollama AI</div></div>
+            <div className="rounded-circle overflow-hidden flex-shrink-0 border border-white border-opacity-50" style={{ width: 36, height: 36 }}>
+              <img src="/jobert-avatar.png" alt="JOBERT" style={{ width: 36, height: 36, objectFit: "cover", objectPosition: "center top" }} />
+            </div>
+            <div className="flex-grow-1"><div className="text-white fw-bold small">JOBERT</div><div className="text-white-50" style={{ fontSize: 11 }}>Powered by Zoilo Tomaquin</div></div>
             <span className="badge bg-success-subtle text-success border border-success-subtle" style={{ fontSize: 10 }}>Online</span>
           </div>
           <div className="flex-grow-1 overflow-auto p-3 d-flex flex-column gap-2" style={{ background: "#f8fafc" }}>
             {msgs.map((m, i) => (
               <div key={i} className={`d-flex gap-2 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
-                {m.role === "ai" && <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width: 28, height: 28, fontSize: 11, marginTop: 2 }}>AI</div>}
+                {m.role === "ai" && <div className="rounded-circle overflow-hidden flex-shrink-0 border border-primary border-opacity-25" style={{ width: 28, height: 28, marginTop: 2 }}>
+                  <img src="/jobert-avatar.png" alt="JOBERT" style={{ width: 28, height: 28, objectFit: "cover", objectPosition: "center top" }} />
+                </div>}
                 <div className="d-flex flex-column gap-1" style={{ maxWidth: "80%" }}>
                   <div className={`rounded-3 px-3 py-2 small lh-base ${m.role === "ai" ? "bg-white border text-dark shadow-sm" : "bg-primary text-white"}`} style={{ whiteSpace: "pre-line" }}>{m.text}</div>
                   {m.role === "ai" && i > 0 && (
@@ -72,7 +76,9 @@ function JobertChat({ initialPrompt }: { initialPrompt?: string }) {
             ))}
             {typing && (
               <div className="d-flex gap-2">
-                <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width: 28, height: 28, fontSize: 11 }}>AI</div>
+                <div className="rounded-circle overflow-hidden flex-shrink-0 border border-primary border-opacity-25" style={{ width: 28, height: 28 }}>
+                  <img src="/jobert-avatar.png" alt="JOBERT" style={{ width: 28, height: 28, objectFit: "cover", objectPosition: "center top" }} />
+                </div>
                 <div className="bg-white border rounded-3 px-3 py-2 d-flex gap-1 align-items-center shadow-sm">
                   {[0,150,300].map(d => <span key={d} className="rounded-circle bg-primary" style={{ width: 6, height: 6, display: "inline-block", animation: `blink 1s ${d}ms infinite` }} />)}
                 </div>

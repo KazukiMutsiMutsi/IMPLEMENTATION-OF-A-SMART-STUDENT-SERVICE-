@@ -72,10 +72,12 @@ function AIChat() {
         <div className="chat-panel">
           {/* header */}
           <div className="px-4 py-3 d-flex align-items-center gap-3 flex-shrink-0" style={{ background: "linear-gradient(135deg,#2563eb,#1d4ed8)" }}>
-            <div className="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width: 36, height: 36, fontSize: 13 }}>AI</div>
+            <div className="rounded-circle overflow-hidden flex-shrink-0 border border-white border-opacity-50" style={{ width: 36, height: 36 }}>
+              <img src="/jobert-avatar.png" alt="JOBERT" style={{ width: 36, height: 36, objectFit: "cover", objectPosition: "center top" }} />
+            </div>
             <div className="flex-grow-1">
               <div className="text-white fw-bold small">JOBERT</div>
-              <div className="text-white-50" style={{ fontSize: 11 }}>Powered by Gemini AI · BC Assistant</div>
+              <div className="text-white-50" style={{ fontSize: 11 }}>Powered by Zoilo Tomaquin · BC Assistant</div>
             </div>
             <span className="badge bg-success-subtle text-success border border-success-subtle d-flex align-items-center gap-1" style={{ fontSize: 10 }}>
               <span className="rounded-circle bg-success d-inline-block" style={{ width: 6, height: 6 }} />Online
@@ -87,7 +89,9 @@ function AIChat() {
             {msgs.map((m, i) => (
               <div key={i} className={`d-flex gap-2 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
                 {m.role === "ai" && (
-                  <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width: 28, height: 28, fontSize: 11, marginTop: 2 }}>AI</div>
+                  <div className="rounded-circle overflow-hidden flex-shrink-0" style={{ width: 28, height: 28, marginTop: 2 }}>
+                    <img src="/jobert-avatar.png" alt="JOBERT" style={{ width: 28, height: 28, objectFit: "cover", objectPosition: "center top" }} />
+                  </div>
                 )}
                 <div className="d-flex flex-column gap-1" style={{ maxWidth: "80%" }}>
                   <div className={`rounded-3 px-3 py-2 small lh-base ${m.role === "ai" ? "bg-white border text-dark shadow-sm" : "bg-primary text-white"}`} style={{ whiteSpace: "pre-line", borderRadius: m.role === "ai" ? "0 1rem 1rem 1rem" : "1rem 0 1rem 1rem" }}>
@@ -106,7 +110,9 @@ function AIChat() {
             ))}
             {typing && (
               <div className="d-flex gap-2">
-                <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width: 28, height: 28, fontSize: 11 }}>AI</div>
+                <div className="rounded-circle overflow-hidden flex-shrink-0" style={{ width: 28, height: 28 }}>
+                  <img src="/jobert-avatar.png" alt="JOBERT" style={{ width: 28, height: 28, objectFit: "cover", objectPosition: "center top" }} />
+                </div>
                 <div className="bg-white border rounded-3 px-3 py-2 d-flex gap-1 align-items-center shadow-sm">
                   {[0, 150, 300].map(d => <span key={d} className="rounded-circle bg-primary" style={{ width: 6, height: 6, display: "inline-block", animation: `blink 1s ${d}ms infinite` }} />)}
                 </div>
