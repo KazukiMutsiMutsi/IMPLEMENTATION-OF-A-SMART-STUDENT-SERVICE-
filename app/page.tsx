@@ -4,33 +4,29 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import LoadingScreen from "./components/LoadingScreen";
 
-/* ── live clock ── */
+/* ── Live clock ── */
 function Clock() {
   const [time, setTime] = useState("");
   const [date, setDate] = useState("");
-
   useEffect(() => {
-    function tick() {
+    const tick = () => {
       const now = new Date();
       setTime(now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
       setDate(now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }));
-    }
+    };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
-
   return (
     <div className="text-center">
-      <div className="text-4xl sm:text-5xl font-mono font-bold text-blue-700 tracking-widest animate-blink">
-        {time}
-      </div>
-      <div className="text-slate-400 text-sm mt-1 tracking-wide">{date}</div>
+      <div className="font-mono fw-bold fs-3 text-inform animate-blink">{time}</div>
+      <div className="text-muted small">{date}</div>
     </div>
   );
 }
 
-/* ── announcement ticker ── */
+/* ── Announcement ticker ── */
 const announcements = [
   "📢  Enrollment Period is Now Open — Deadline: June 15, 2026",
   "📋  Final Exam Schedule has been posted — Check your student portal",
@@ -38,20 +34,17 @@ const announcements = [
   "📚  Library hours extended during exam week: 7AM – 11PM",
   "💳  Student ID renewal available at the Registrar's Office",
 ];
-
 function Ticker() {
   return (
-    <div className="w-full bg-blue-600 py-2 ticker-wrap">
-      <div className="animate-ticker inline-block text-white text-sm font-medium tracking-wide">
-        {announcements.join("     ·     ")}
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        {announcements.join("     ·     ")}
+    <div className="bg-primary py-2 ticker-wrap">
+      <div className="animate-ticker d-inline-block text-white small fw-semibold">
+        {announcements.join("     ·     ")}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{announcements.join("     ·     ")}
       </div>
     </div>
   );
 }
 
-/* ── quick service tiles ── */
+/* ── Service tiles ── */
 const services = [
   { icon: "🎓", label: "Enrollment",      desc: "Register for classes" },
   { icon: "📊", label: "Grades",          desc: "View your results"    },
@@ -69,134 +62,97 @@ export default function KioskHome() {
   return (
     <>
       {!loaded && <LoadingScreen onDone={() => setLoaded(true)} />}
-      <div className={`min-h-screen kiosk-bg flex flex-col transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`} suppressHydrationWarning>
+      <div className={`kiosk-bg d-flex flex-column`} style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.5s" }} suppressHydrationWarning>
 
-      {/* ── top bar ── */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-blue-100 glass-dark">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 shrink-0">
-            <img src="/image.png" alt="Benedicto College" className="w-full h-full object-cover" />
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-extrabold text-lg shadow-md shadow-blue-200">
-            IN
-          </div>
-          <div>
-            <div className="text-slate-800 font-bold text-base leading-tight">INFORM</div>
-            <div className="text-slate-400 text-xs">Benedicto College</div>
-          </div>
-        </div>
-
-        {/* live clock — desktop */}
-        <div className="hidden md:block">
-          <Clock />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-green-600 text-xs font-medium">System Online</span>
-          </div>
-          <Link
-            href="/admin/login"
-            className="text-slate-500 hover:text-slate-800 text-xs border border-slate-200 hover:border-slate-400 px-3 py-1.5 rounded-lg transition-all bg-white/60"
-          >
-            Admin Access
-          </Link>
-        </div>
-      </header>
-
-      {/* ── announcement ticker ── */}
-      <Ticker />
-
-      {/* ── main kiosk body ── */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-10 gap-10">
-
-        {/* mobile clock */}
-        <div className="md:hidden animate-fade-in">
-          <Clock />
-        </div>
-
-        {/* headline */}
-        <div className="text-center animate-fade-in delay-100">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-800 leading-tight tracking-tight">
-            Self-Service Student
-            <br />
-            <span className="text-blue-600">Information Kiosk</span>
-          </h1>
-          <p className="text-slate-500 text-base sm:text-lg mt-3 max-w-lg mx-auto">
-            Access your academic records anytime, anywhere on campus
-          </p>
-        </div>
-
-        {/* enrollment banner */}
-        <div className="w-full max-w-2xl glass rounded-2xl px-6 py-4 flex flex-col sm:flex-row items-center gap-4 animate-fade-in delay-200 border-l-4 border-yellow-400">
-          <div className="w-10 h-10 rounded-full bg-yellow-100 border border-yellow-300 flex items-center justify-center text-xl shrink-0">
-            🔔
-          </div>
-          <div className="flex-1 text-center sm:text-left">
-            <div className="text-yellow-600 font-bold text-sm">Enrollment Period is Now Open</div>
-            <div className="text-slate-500 text-xs mt-0.5">
-              Don&apos;t miss the deadline! Enroll for the upcoming semester by{" "}
-              <span className="text-slate-800 font-semibold">June 15, 2026</span>.
+        {/* ── Navbar ── */}
+        <nav className="navbar glass border-bottom px-3 px-md-4 py-3">
+          <div className="d-flex align-items-center gap-3">
+            <img src="/image.png" alt="BC" className="rounded-circle border" style={{ width: 36, height: 36, objectFit: "cover" }} />
+            <div className="d-flex align-items-center justify-content-center rounded-3 bg-primary text-white fw-black" style={{ width: 40, height: 40, fontSize: 16 }}>IN</div>
+            <div>
+              <div className="fw-bold text-dark lh-1">INFORM</div>
+              <div className="text-muted" style={{ fontSize: 11 }}>Benedicto College</div>
             </div>
           </div>
-          <Link
-            href="/login"
-            className="shrink-0 bg-yellow-400 hover:bg-yellow-300 text-yellow-900 font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-sm"
-          >
-            Enroll Now
-          </Link>
-        </div>
 
-        {/* TAP TO START button */}
-        <div className="relative animate-fade-in delay-300 flex flex-col items-center gap-3">
-          {/* pulse rings */}
-          <span className="absolute inset-0 rounded-full animate-pulse-ring bg-blue-400/20 pointer-events-none" />
-          <span className="absolute inset-0 rounded-full animate-pulse-ring bg-blue-400/15 pointer-events-none" style={{ animationDelay: "0.6s" }} />
+          <div className="d-none d-md-block mx-auto"><Clock /></div>
 
-          <Link
-            href="/login"
-            className="tap-btn relative z-10 w-48 h-48 sm:w-56 sm:h-56 rounded-full flex flex-col items-center justify-center gap-2 text-white select-none"
-          >
-            <span className="text-4xl sm:text-5xl">👆</span>
-            <span className="font-extrabold text-xl sm:text-2xl tracking-wide">TAP TO</span>
-            <span className="font-extrabold text-xl sm:text-2xl tracking-wide">START</span>
-          </Link>
-        </div>
+          <div className="d-flex align-items-center gap-3">
+            <span className="badge bg-success-subtle text-success border border-success-subtle d-flex align-items-center gap-1">
+              <span className="rounded-circle bg-success d-inline-block" style={{ width: 7, height: 7 }} />
+              System Online
+            </span>
+            <Link href="/admin/login" className="btn btn-sm btn-outline-secondary">Admin Access</Link>
+          </div>
+        </nav>
 
-        {/* quick services grid */}
-        <div className="w-full max-w-3xl animate-fade-in delay-400">
-          <p className="text-slate-400 text-xs text-center uppercase tracking-widest mb-4">
-            Quick Access Services
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {services.map((s) => (
-              <Link
-                key={s.label}
-                href="/login"
-                className="service-card rounded-2xl p-4 flex flex-col items-center gap-2 text-center cursor-pointer"
-              >
-                <span className="text-3xl">{s.icon}</span>
-                <span className="text-slate-700 font-semibold text-sm">{s.label}</span>
-                <span className="text-slate-400 text-xs">{s.desc}</span>
-              </Link>
+        {/* ── Ticker ── */}
+        <Ticker />
+
+        {/* ── Main ── */}
+        <main className="flex-grow-1 d-flex flex-column align-items-center justify-content-center px-3 py-5 gap-4">
+
+          {/* Mobile clock */}
+          <div className="d-md-none animate-fade-in"><Clock /></div>
+
+          {/* Headline */}
+          <div className="text-center animate-fade-in delay-1">
+            <h1 className="fw-black display-5 text-dark lh-sm">
+              Self-Service Student<br />
+              <span className="text-inform">Information Kiosk</span>
+            </h1>
+            <p className="text-muted mt-2 fs-6">Access your academic records anytime, anywhere on campus</p>
+          </div>
+
+          {/* Enrollment banner */}
+          <div className="glass rounded-3 px-4 py-3 d-flex flex-column flex-sm-row align-items-center gap-3 animate-fade-in delay-2 border-start border-4 border-warning" style={{ maxWidth: 640, width: "100%" }}>
+            <div className="rounded-circle bg-warning-subtle border border-warning d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 44, height: 44, fontSize: 22 }}>🔔</div>
+            <div className="flex-grow-1 text-center text-sm-start">
+              <div className="fw-bold text-warning-emphasis small">Enrollment Period is Now Open</div>
+              <div className="text-muted" style={{ fontSize: 12 }}>
+                Don&apos;t miss the deadline! Enroll by <strong className="text-dark">June 15, 2026</strong>.
+              </div>
+            </div>
+            <Link href="/login" className="btn btn-warning btn-sm fw-bold flex-shrink-0">Enroll Now</Link>
+          </div>
+
+          {/* TAP TO START */}
+          <div className="position-relative d-flex flex-column align-items-center animate-fade-in delay-3">
+            <span className="position-absolute top-50 start-50 translate-middle rounded-circle animate-pulse-ring" style={{ width: 220, height: 220, background: "rgba(37,99,235,0.12)", pointerEvents: "none" }} />
+            <Link href="/login" className="tap-btn text-decoration-none">
+              <span style={{ fontSize: 44 }}>👆</span>
+              <span className="fw-black fs-4 lh-1">TAP TO</span>
+              <span className="fw-black fs-4 lh-1">START</span>
+            </Link>
+          </div>
+
+          {/* Quick services */}
+          <div className="animate-fade-in delay-4" style={{ maxWidth: 720, width: "100%" }}>
+            <p className="text-muted text-center text-uppercase small fw-semibold mb-3 ls-wide">Quick Access Services</p>
+            <div className="row g-3">
+              {services.map((s) => (
+                <div key={s.label} className="col-6 col-sm-3">
+                  <Link href="/login" className="service-tile h-100">
+                    <span style={{ fontSize: 32 }}>{s.icon}</span>
+                    <span className="fw-semibold small text-dark">{s.label}</span>
+                    <span className="text-muted" style={{ fontSize: 11 }}>{s.desc}</span>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+
+        {/* ── Footer ── */}
+        <footer className="glass border-top px-4 py-3 d-flex flex-column flex-sm-row align-items-center justify-content-between gap-2">
+          <p className="text-muted small mb-0">© 2026 INFORM University. All rights reserved.</p>
+          <div className="d-flex gap-3">
+            {["Privacy Policy", "Help", "Accessibility"].map((l) => (
+              <a key={l} href="#" className="text-muted small text-decoration-none">{l}</a>
             ))}
           </div>
-        </div>
-      </main>
-
-      {/* ── footer ── */}
-      <footer className="border-t border-blue-100 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 glass-dark">
-        <p className="text-slate-400 text-xs">© 2026 INFORM University. All rights reserved.</p>
-        <div className="flex items-center gap-4">
-          {["Privacy Policy", "Help", "Accessibility"].map((l) => (
-            <a key={l} href="#" className="text-slate-400 hover:text-slate-600 text-xs transition-colors">
-              {l}
-            </a>
-          ))}
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
     </>
   );
 }

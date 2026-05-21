@@ -1,6 +1,5 @@
 ﻿"use client";
 
-
 import { useState, useEffect, useRef } from "react";
 import type React from "react";
 import Link from "next/link";
@@ -8,51 +7,27 @@ import Link from "next/link";
 type Panel = "home" | "grades" | "schedule" | "tuition" | "library";
 type JMsg  = { role: "ai" | "user"; text: string; feedback?: "up" | "down" | null };
 
-/* ══════════════════════════════════════════
-   JOBERT MINI CHAT  (#1 — inside dashboard)
-   Shared by all panels
-══════════════════════════════════════════ */
+/* ── JOBERT Chat ── */
 function JobertChat({ initialPrompt }: { initialPrompt?: string }) {
   const [open, setOpen]     = useState(false);
-  const [msgs, setMsgs]     = useState<JMsg[]>([
-    { role: "ai", text: "Hi! I am JOBERT, your INFORM Assistant. I can help you understand your grades, schedule, tuition, library, and more. What do you need?" },
-  ]);
+  const [msgs, setMsgs]     = useState<JMsg[]>([{ role: "ai", text: "Hi! I am JOBERT, your INFORM Assistant. I can help you understand your grades, schedule, tuition, library, and more. What do you need?" }]);
   const [input, setInput]   = useState("");
   const [typing, setTyping] = useState(false);
   const bottomRef           = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [msgs, typing]);
-
-  /* auto-open and pre-fill if a prompt is injected */
-  useEffect(() => {
-    if (initialPrompt) {
-      setOpen(true);
-      send(initialPrompt);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialPrompt]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, typing]);
+  useEffect(() => { if (initialPrompt) { setOpen(true); send(initialPrompt); } }, [initialPrompt]); // eslint-disable-line
 
   function send(text: string) {
     if (!text.trim()) return;
     const userMsg: JMsg = { role: "user", text: text.trim() };
     const newMsgs = [...msgs, userMsg];
-    setMsgs(newMsgs);
-    setInput("");
-    setTyping(true);
-
-    fetch("/api/jobert", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: text.trim(),
-        history: newMsgs.slice(-6).map(m => ({ role: m.role, text: m.text })),
-      }),
-    })
+    setMsgs(newMsgs); setInput(""); setTyping(true);
+    fetch("/api/jobert", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text.trim(), history: newMsgs.slice(-6).map(m => ({ role: m.role, text: m.text })) }) })
       .then(r => r.json())
-      .then(d => setMsgs(prev => [...prev, { role: "ai", text: d.reply ?? "Sorry, I could not respond. Please try again.", feedback: null }]))
-      .catch(() => setMsgs(prev => [...prev, { role: "ai", text: "I am having trouble connecting. Please check your internet and try again.", feedback: null }]))
+      .then(d => setMsgs(prev => [...prev, { role: "ai", text: d.reply ?? "Sorry, I could not respond.", feedback: null }]))
+      .catch(() => setMsgs(prev => [...prev, { role: "ai", text: "I am having trouble connecting. Please try again.", feedback: null }]))
       .finally(() => setTyping(false));
   }
 
@@ -60,90 +35,58 @@ function JobertChat({ initialPrompt }: { initialPrompt?: string }) {
     setMsgs(prev => prev.map((m, i) => i === idx ? { ...m, feedback: val } : m));
   }
 
-  const suggestions = [
-    "Explain my GWA",
-    "How do I pay tuition?",
-    "How to request a TOR?",
-    "Enrollment deadline?",
-    "Library hours?",
-  ];
+  const suggestions = ["Explain my GWA","How do I pay tuition?","How to request a TOR?","Enrollment deadline?","Library hours?"];
 
   return (
     <>
-      {/* floating button */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all hover:scale-110 active:scale-95"
-        style={{ background: "linear-gradient(135deg,#2563eb,#1d4ed8)", boxShadow: "0 8px 32px rgba(37,99,235,0.45)" }}
-      >
+      <button className="chat-fab" onClick={() => setOpen(!open)}>
         {open
-          ? <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-6 h-6"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          : <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-7 h-7"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10a9.96 9.96 0 0 1-5.06-1.37L2 22l1.37-4.94A9.96 9.96 0 0 1 2 12 10 10 0 0 1 12 2"/><path d="M8 10h.01M12 10h.01M16 10h.01" strokeLinecap="round"/></svg>
+          ? <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" width="22" height="22"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          : <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" width="26" height="26"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10a9.96 9.96 0 0 1-5.06-1.37L2 22l1.37-4.94A9.96 9.96 0 0 1 2 12 10 10 0 0 1 12 2"/><path d="M8 10h.01M12 10h.01M16 10h.01" strokeLinecap="round"/></svg>
         }
-        {!open && <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white animate-pulse" />}
+        {!open && <span className="position-absolute top-0 end-0 rounded-circle bg-success border border-white" style={{ width: 13, height: 13 }} />}
       </button>
-
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 rounded-3xl overflow-hidden flex flex-col"
-          style={{ height:"500px", background:"white", boxShadow:"0 24px 64px rgba(37,99,235,0.18)", border:"1px solid rgba(37,99,235,0.1)" }}>
-          {/* header */}
-          <div className="px-5 py-4 flex items-center gap-3 shrink-0" style={{ background:"linear-gradient(135deg,#2563eb,#1d4ed8)" }}>
-            <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm shrink-0">AI</div>
-            <div className="flex-1">
-              <div className="text-white font-bold text-sm">JOBERT</div>
-              <div className="text-blue-200 text-xs">Powered by Gemini AI</div>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-blue-200 text-xs">Online</span>
-            </div>
+        <div className="chat-panel">
+          <div className="px-4 py-3 d-flex align-items-center gap-3 flex-shrink-0" style={{ background: "linear-gradient(135deg,#2563eb,#1d4ed8)" }}>
+            <div className="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width: 36, height: 36, fontSize: 13 }}>AI</div>
+            <div className="flex-grow-1"><div className="text-white fw-bold small">JOBERT</div><div className="text-white-50" style={{ fontSize: 11 }}>Powered by Gemini AI</div></div>
+            <span className="badge bg-success-subtle text-success border border-success-subtle" style={{ fontSize: 10 }}>Online</span>
           </div>
-          {/* messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3 bg-slate-50">
+          <div className="flex-grow-1 overflow-auto p-3 d-flex flex-column gap-2" style={{ background: "#f8fafc" }}>
             {msgs.map((m, i) => (
-              <div key={i} className={`flex gap-2 ${m.role==="user" ? "flex-row-reverse" : ""}`}>
-                {m.role==="ai" && <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">AI</div>}
-                <div className="flex flex-col gap-1 max-w-[80%]">
-                  <div className={`rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-line ${m.role==="ai" ? "bg-white border border-slate-200 text-slate-700 rounded-tl-sm shadow-sm" : "bg-blue-600 text-white rounded-tr-sm"}`}>
-                    {m.text}
-                  </div>
-                  {m.role==="ai" && i>0 && (
-                    <div className="flex gap-1 ml-1">
-                      <button onClick={() => setFeedback(i,"up")} className={`text-xs px-1.5 py-0.5 rounded-lg transition-all ${m.feedback==="up" ? "bg-green-100 text-green-600" : "text-slate-300 hover:text-green-500"}`}>&#128077;</button>
-                      <button onClick={() => setFeedback(i,"down")} className={`text-xs px-1.5 py-0.5 rounded-lg transition-all ${m.feedback==="down" ? "bg-red-100 text-red-500" : "text-slate-300 hover:text-red-400"}`}>&#128078;</button>
-                      {m.feedback==="up" && <span className="text-xs text-slate-400 ml-1 self-center">Glad that helped!</span>}
-                      {m.feedback==="down" && <span className="text-xs text-slate-400 ml-1 self-center">Thanks, we will improve this.</span>}
+              <div key={i} className={`d-flex gap-2 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
+                {m.role === "ai" && <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width: 28, height: 28, fontSize: 11, marginTop: 2 }}>AI</div>}
+                <div className="d-flex flex-column gap-1" style={{ maxWidth: "80%" }}>
+                  <div className={`rounded-3 px-3 py-2 small lh-base ${m.role === "ai" ? "bg-white border text-dark shadow-sm" : "bg-primary text-white"}`} style={{ whiteSpace: "pre-line" }}>{m.text}</div>
+                  {m.role === "ai" && i > 0 && (
+                    <div className="d-flex gap-1 ms-1">
+                      <button onClick={() => setFeedback(i, "up")} className={`btn btn-sm py-0 px-1 border-0 ${m.feedback === "up" ? "text-success" : "text-secondary"}`} style={{ fontSize: 13 }}>👍</button>
+                      <button onClick={() => setFeedback(i, "down")} className={`btn btn-sm py-0 px-1 border-0 ${m.feedback === "down" ? "text-danger" : "text-secondary"}`} style={{ fontSize: 13 }}>👎</button>
+                      {m.feedback === "up" && <span className="text-muted" style={{ fontSize: 10, alignSelf: "center" }}>Glad that helped!</span>}
+                      {m.feedback === "down" && <span className="text-muted" style={{ fontSize: 10, alignSelf: "center" }}>Thanks, we will improve this.</span>}
                     </div>
                   )}
                 </div>
               </div>
             ))}
             {typing && (
-              <div className="flex gap-2">
-                <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">AI</div>
-                <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1 items-center shadow-sm">
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay:"0ms"}}/>
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay:"150ms"}}/>
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay:"300ms"}}/>
+              <div className="d-flex gap-2">
+                <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width: 28, height: 28, fontSize: 11 }}>AI</div>
+                <div className="bg-white border rounded-3 px-3 py-2 d-flex gap-1 align-items-center shadow-sm">
+                  {[0,150,300].map(d => <span key={d} className="rounded-circle bg-primary" style={{ width: 6, height: 6, display: "inline-block", animation: `blink 1s ${d}ms infinite` }} />)}
                 </div>
               </div>
             )}
-            <div ref={bottomRef}/>
+            <div ref={bottomRef} />
           </div>
-          {/* suggestions */}
-          <div className="px-3 py-2 flex gap-1.5 overflow-x-auto shrink-0 bg-white border-t border-slate-100">
-            {suggestions.map(s => (
-              <button key={s} onClick={() => send(s)} className="shrink-0 text-xs px-3 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 transition-colors whitespace-nowrap">{s}</button>
-            ))}
+          <div className="px-3 py-2 d-flex gap-2 overflow-auto flex-shrink-0 bg-white border-top" style={{ flexWrap: "nowrap" }}>
+            {suggestions.map(s => <button key={s} onClick={() => send(s)} className="btn btn-sm btn-outline-primary flex-shrink-0" style={{ fontSize: 11, whiteSpace: "nowrap" }}>{s}</button>)}
           </div>
-          {/* input */}
-          <div className="px-3 pb-3 pt-2 flex gap-2 shrink-0 bg-white">
-            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key==="Enter" && send(input)}
-              placeholder="Ask JOBERT anything..."
-              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-400 transition"/>
-            <button onClick={() => send(input)} disabled={!input.trim()||typing}
-              className="w-9 h-9 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 flex items-center justify-center transition-colors shrink-0">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-4 h-4"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+          <div className="px-3 pb-3 pt-2 d-flex gap-2 flex-shrink-0 bg-white">
+            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send(input)} placeholder="Ask JOBERT anything..." className="form-control form-control-sm" />
+            <button onClick={() => send(input)} disabled={!input.trim() || typing} className="btn btn-primary btn-sm px-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" width="16" height="16"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
             </button>
           </div>
         </div>
@@ -152,9 +95,7 @@ function JobertChat({ initialPrompt }: { initialPrompt?: string }) {
   );
 }
 
-/* ══════════════════════════════════════════
-   DATA
-══════════════════════════════════════════ */
+/* ── Data ── */
 const gradeData = [
   { subject:"Mathematics",        icon:"📐", grade:"A",  pct:92, teacher:"Mr. Dela Cruz",  status:"Excellent" },
   { subject:"Physics",            icon:"⚛️", grade:"B+", pct:87, teacher:"Ms. Villanueva", status:"Passing"   },
@@ -166,30 +107,30 @@ const gradeData = [
 
 const timetable: Record<string, { time:string; subject:string; icon:string; room:string; color:string }[]> = {
   Monday:[
-    { time:"07:30–08:30", subject:"Mathematics",        icon:"📐", room:"Room 301", color:"bg-blue-600"   },
-    { time:"08:30–09:30", subject:"English Literature", icon:"📖", room:"Room 205", color:"bg-pink-600"   },
-    { time:"10:00–11:00", subject:"Computer Science",   icon:"💻", room:"ICT Lab",  color:"bg-green-600"  },
-    { time:"13:00–14:00", subject:"Physical Education", icon:"🏃", room:"Gym",      color:"bg-rose-500"   },
+    { time:"07:30–08:30", subject:"Mathematics",        icon:"📐", room:"Room 301", color:"primary"   },
+    { time:"08:30–09:30", subject:"English Literature", icon:"📖", room:"Room 205", color:"danger"    },
+    { time:"10:00–11:00", subject:"Computer Science",   icon:"💻", room:"ICT Lab",  color:"success"   },
+    { time:"13:00–14:00", subject:"Physical Education", icon:"🏃", room:"Gym",      color:"warning"   },
   ],
   Tuesday:[
-    { time:"07:30–09:00", subject:"Physics",   icon:"⚛️", room:"Sci. Lab", color:"bg-purple-600" },
-    { time:"09:00–10:30", subject:"Chemistry", icon:"🧪", room:"Chem Lab", color:"bg-cyan-600"   },
-    { time:"13:00–14:30", subject:"History",   icon:"🏛️", room:"Room 108", color:"bg-amber-600"  },
+    { time:"07:30–09:00", subject:"Physics",   icon:"⚛️", room:"Sci. Lab", color:"purple"  },
+    { time:"09:00–10:30", subject:"Chemistry", icon:"🧪", room:"Chem Lab", color:"info"    },
+    { time:"13:00–14:30", subject:"History",   icon:"🏛️", room:"Room 108", color:"warning" },
   ],
   Wednesday:[
-    { time:"07:30–08:30", subject:"Mathematics",        icon:"📐", room:"Room 301", color:"bg-blue-600"  },
-    { time:"08:30–09:30", subject:"English Literature", icon:"📖", room:"Room 205", color:"bg-pink-600"  },
-    { time:"10:00–11:00", subject:"Computer Science",   icon:"💻", room:"ICT Lab",  color:"bg-green-600" },
+    { time:"07:30–08:30", subject:"Mathematics",        icon:"📐", room:"Room 301", color:"primary" },
+    { time:"08:30–09:30", subject:"English Literature", icon:"📖", room:"Room 205", color:"danger"  },
+    { time:"10:00–11:00", subject:"Computer Science",   icon:"💻", room:"ICT Lab",  color:"success" },
   ],
   Thursday:[
-    { time:"07:30–09:00", subject:"Physics",   icon:"⚛️", room:"Sci. Lab", color:"bg-purple-600" },
-    { time:"09:00–10:30", subject:"Chemistry", icon:"🧪", room:"Chem Lab", color:"bg-cyan-600"   },
-    { time:"13:00–14:30", subject:"History",   icon:"🏛️", room:"Room 108", color:"bg-amber-600"  },
+    { time:"07:30–09:00", subject:"Physics",   icon:"⚛️", room:"Sci. Lab", color:"purple"  },
+    { time:"09:00–10:30", subject:"Chemistry", icon:"🧪", room:"Chem Lab", color:"info"    },
+    { time:"13:00–14:30", subject:"History",   icon:"🏛️", room:"Room 108", color:"warning" },
   ],
   Friday:[
-    { time:"07:30–08:30", subject:"Mathematics",        icon:"📐", room:"Room 301", color:"bg-blue-600"  },
-    { time:"08:30–09:30", subject:"Computer Science",   icon:"💻", room:"ICT Lab",  color:"bg-green-600" },
-    { time:"10:00–11:00", subject:"English Literature", icon:"📖", room:"Room 205", color:"bg-pink-600"  },
+    { time:"07:30–08:30", subject:"Mathematics",        icon:"📐", room:"Room 301", color:"primary" },
+    { time:"08:30–09:30", subject:"Computer Science",   icon:"💻", room:"ICT Lab",  color:"success" },
+    { time:"10:00–11:00", subject:"English Literature", icon:"📖", room:"Room 205", color:"danger"  },
   ],
 };
 
@@ -209,72 +150,61 @@ const books = [
   { title:"Chemistry: The Central Science",   author:"Brown & LeMay",       category:"Chemistry",   available:true,  due:null    },
   { title:"Sapiens: A Brief History",         author:"Yuval Noah Harari",   category:"History",     available:false, due:"Jun 5" },
   { title:"Introduction to Algorithms",       author:"Cormen et al.",       category:"CS",          available:true,  due:null    },
-  { title:"The Great Gatsby",                 author:"F. Scott Fitzgerald", category:"Literature",  available:true,  due:null    },
 ];
 
-/* ══════════════════════════════════════════
-   BACK BUTTON
-══════════════════════════════════════════ */
+/* ── Back button ── */
 function BackBtn({ onClick }: { onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex items-center gap-2 text-slate-500 hover:text-blue-600 text-sm font-semibold transition-colors mb-2">
+    <button onClick={onClick} className="btn btn-link text-muted text-decoration-none ps-0 mb-3 d-flex align-items-center gap-1 small fw-semibold">
       ← Back to Dashboard
     </button>
   );
 }
 
-/* ══════════════════════════════════════════
-   #2 GRADES VIEW — Ask JOBERT per subject
-══════════════════════════════════════════ */
+/* ── Grades View ── */
 function GradesView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert: (p: string) => void }) {
   const avg = Math.round(gradeData.reduce((a, g) => a + g.pct, 0) / gradeData.length);
   return (
-    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
+    <div className="d-flex flex-column gap-4">
       <BackBtn onClick={onBack} />
-      <div className="flex items-center justify-between">
+      <div className="d-flex align-items-start justify-content-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-slate-800 font-extrabold text-2xl">My Grades</h2>
-          <p className="text-slate-400 text-sm">1st Semester · 2025–2026</p>
+          <h2 className="fw-black fs-4 text-dark mb-0">My Grades</h2>
+          <p className="text-muted small mb-0">1st Semester · 2025–2026</p>
         </div>
-        <div className="flex flex-col items-center gap-1">
-          <div className="bg-blue-50 border border-blue-100 rounded-2xl px-5 py-3 text-center">
-            <div className="text-xs text-slate-400">General Average</div>
-            <div className="text-2xl font-extrabold text-blue-600">{avg}%</div>
+        <div className="d-flex flex-column align-items-center gap-1">
+          <div className="bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3 px-4 py-2 text-center">
+            <div className="text-muted" style={{ fontSize: 11 }}>General Average</div>
+            <div className="fw-black fs-3 text-primary">{avg}%</div>
           </div>
-          {/* #2 — explain GWA */}
-          <button
-            onClick={() => onAskJobert(`My general average is ${avg}%. Can you explain what this means in the Philippine grading scale and what I need to improve?`)}
-            className="text-xs text-blue-500 hover:text-blue-700 font-semibold transition-colors flex items-center gap-1"
-          >
-            🤖 Ask JOBERT to explain
-          </button>
+          <button onClick={() => onAskJobert(`My general average is ${avg}%. Can you explain what this means in the Philippine grading scale?`)}
+            className="btn btn-link btn-sm p-0 text-primary" style={{ fontSize: 12 }}>🤖 Ask JOBERT to explain</button>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="row g-3">
         {gradeData.map((g, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-xl shrink-0">{g.icon}</div>
-              <div className="flex-1 min-w-0">
-                <div className="text-slate-700 font-bold text-sm truncate">{g.subject}</div>
-                <div className="text-slate-400 text-xs">{g.teacher}</div>
+          <div key={i} className="col-12 col-sm-6">
+            <div className="card border-0 shadow-sm rounded-3 h-100">
+              <div className="card-body p-4">
+                <div className="d-flex align-items-center gap-3 mb-3">
+                  <div className="rounded-3 bg-primary d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 40, height: 40, fontSize: 20 }}>{g.icon}</div>
+                  <div className="flex-grow-1 overflow-hidden">
+                    <div className="fw-bold small text-dark text-truncate">{g.subject}</div>
+                    <div className="text-muted" style={{ fontSize: 11 }}>{g.teacher}</div>
+                  </div>
+                  <div className="fw-black fs-4 text-primary flex-shrink-0">{g.grade}</div>
+                </div>
+                <div className="progress mb-2" style={{ height: 6 }}>
+                  <div className="progress-bar bg-primary" style={{ width: `${g.pct}%` }} />
+                </div>
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <span className="text-muted small">{g.pct}%</span>
+                  <span className={`badge ${g.status === "Excellent" ? "bg-success-subtle text-success border border-success-subtle" : "bg-primary-subtle text-primary border border-primary-subtle"}`}>{g.status}</span>
+                </div>
+                <button onClick={() => onAskJobert(`I got ${g.grade} (${g.pct}%) in ${g.subject} with ${g.teacher}. Can you explain this grade and give me tips to improve?`)}
+                  className="btn btn-outline-primary btn-sm w-100" style={{ fontSize: 12 }}>🤖 Ask JOBERT about this grade</button>
               </div>
-              <div className="text-2xl font-extrabold text-blue-600 shrink-0">{g.grade}</div>
             </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-2">
-              <div className="h-full bg-blue-500 rounded-full" style={{ width:`${g.pct}%` }} />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400 text-xs">{g.pct}%</span>
-              <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${g.status==="Excellent" ? "bg-green-100 text-green-600" : "bg-blue-50 text-blue-500"}`}>{g.status}</span>
-            </div>
-            {/* #2 — per-subject ask JOBERT */}
-            <button
-              onClick={() => onAskJobert(`I got ${g.grade} (${g.pct}%) in ${g.subject} with ${g.teacher}. Can you explain this grade and give me tips to improve?`)}
-              className="mt-3 w-full text-xs text-blue-500 hover:text-blue-700 border border-blue-100 hover:border-blue-300 rounded-xl py-1.5 transition-all flex items-center justify-center gap-1"
-            >
-              🤖 Ask JOBERT about this grade
-            </button>
           </div>
         ))}
       </div>
@@ -282,56 +212,45 @@ function GradesView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert: 
   );
 }
 
-/* ══════════════════════════════════════════
-   #3 SCHEDULE VIEW — Study tips for today
-══════════════════════════════════════════ */
+/* ── Schedule View ── */
 function ScheduleView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert: (p: string) => void }) {
   const days = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
   const todayIdx = Math.min(new Date().getDay() - 1, 4);
   const [day, setDay] = useState(days[todayIdx >= 0 ? todayIdx : 0]);
-
-  const todayClasses = timetable[day];
-  const subjectList  = todayClasses.map(c => c.subject).join(", ");
+  const subjectList = timetable[day].map(c => c.subject).join(", ");
 
   return (
-    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
+    <div className="d-flex flex-column gap-4">
       <BackBtn onClick={onBack} />
-      <div className="flex items-start justify-between gap-3">
+      <div className="d-flex align-items-start justify-content-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-slate-800 font-extrabold text-2xl">My Schedule</h2>
-          <p className="text-slate-400 text-sm">1st Semester · 2025–2026</p>
+          <h2 className="fw-black fs-4 text-dark mb-0">My Schedule</h2>
+          <p className="text-muted small mb-0">1st Semester · 2025–2026</p>
         </div>
-        {/* #3 — study tips button */}
-        <button
-          onClick={() => onAskJobert(`Today is ${day}. My classes are: ${subjectList}. Can you give me study tips and how to prepare for each subject today?`)}
-          className="shrink-0 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 text-xs font-semibold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5"
-        >
-          🤖 Study tips for today
-        </button>
+        <button onClick={() => onAskJobert(`Today is ${day}. My classes are: ${subjectList}. Can you give me study tips for each subject?`)}
+          className="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 flex-shrink-0" style={{ fontSize: 12 }}>🤖 Study tips for today</button>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="d-flex gap-2 overflow-auto pb-1">
         {days.map(d => (
           <button key={d} onClick={() => setDay(d)}
-            className={`shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${day===d ? "bg-blue-600 text-white shadow-md shadow-blue-200" : "bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600"}`}>
-            {d.slice(0,3)}
+            className={`btn btn-sm flex-shrink-0 ${day === d ? "btn-primary shadow-sm" : "btn-outline-secondary"}`}>
+            {d.slice(0, 3)}
           </button>
         ))}
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="d-flex flex-column gap-2">
         {timetable[day].map((cls, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-4 hover:border-blue-200 transition-all">
-            <div className="text-xs font-mono text-slate-400 w-28 shrink-0">{cls.time}</div>
-            <div className={`w-11 h-11 rounded-xl ${cls.color} flex items-center justify-center text-2xl shrink-0`}>{cls.icon}</div>
-            <div className="flex-1 min-w-0">
-              <div className="text-slate-700 font-bold text-sm">{cls.subject}</div>
-              <div className="text-slate-400 text-xs mt-0.5">📍 {cls.room}</div>
+          <div key={i} className="card border-0 shadow-sm rounded-3">
+            <div className="card-body p-3 d-flex align-items-center gap-3">
+              <span className="font-mono text-muted flex-shrink-0" style={{ fontSize: 12, width: 110 }}>{cls.time}</span>
+              <div className={`rounded-3 bg-${cls.color} d-flex align-items-center justify-content-center flex-shrink-0`} style={{ width: 44, height: 44, fontSize: 22 }}>{cls.icon}</div>
+              <div className="flex-grow-1">
+                <div className="fw-bold small text-dark">{cls.subject}</div>
+                <div className="text-muted" style={{ fontSize: 11 }}>📍 {cls.room}</div>
+              </div>
+              <button onClick={() => onAskJobert(`Give me a quick study tip for ${cls.subject} class at ${cls.time} in ${cls.room}.`)}
+                className="btn btn-link btn-sm p-0 text-primary flex-shrink-0" title="Ask JOBERT">🤖</button>
             </div>
-            {/* per-class tip */}
-            <button
-              onClick={() => onAskJobert(`Give me a quick study tip for ${cls.subject} class at ${cls.time} in ${cls.room}.`)}
-              className="shrink-0 text-blue-400 hover:text-blue-600 text-xs transition-colors"
-              title="Ask JOBERT for a tip"
-            >🤖</button>
           </div>
         ))}
       </div>
@@ -339,9 +258,7 @@ function ScheduleView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert
   );
 }
 
-/* ══════════════════════════════════════════
-   #4 TUITION VIEW — Payment guide button
-══════════════════════════════════════════ */
+/* ── Tuition View ── */
 function TuitionView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert: (p: string) => void }) {
   const total   = fees.reduce((a, f) => a + f.amount, 0);
   const paid    = fees.filter(f => f.paid).reduce((a, f) => a + f.amount, 0);
@@ -349,56 +266,51 @@ function TuitionView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert:
   const unpaidList = fees.filter(f => !f.paid).map(f => f.label).join(", ");
 
   return (
-    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
+    <div className="d-flex flex-column gap-4">
       <BackBtn onClick={onBack} />
-      <div className="flex items-start justify-between gap-3">
+      <div className="d-flex align-items-start justify-content-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-slate-800 font-extrabold text-2xl">Tuition Fee</h2>
-          <p className="text-slate-400 text-sm">1st Semester · 2025–2026</p>
+          <h2 className="fw-black fs-4 text-dark mb-0">Tuition Fee</h2>
+          <p className="text-muted small mb-0">1st Semester · 2025–2026</p>
         </div>
-        {/* #4 — payment guide */}
-        <button
-          onClick={() => onAskJobert(`I have an unpaid balance of ₱${balance.toLocaleString()} for: ${unpaidList}. How do I pay my tuition at Benedicto College? What are the steps, where do I go, and what do I bring?`)}
-          className="shrink-0 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 text-xs font-semibold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5"
-        >
-          🤖 How do I pay?
-        </button>
+        <button onClick={() => onAskJobert(`I have an unpaid balance of ₱${balance.toLocaleString()} for: ${unpaidList}. How do I pay my tuition?`)}
+          className="btn btn-outline-primary btn-sm flex-shrink-0" style={{ fontSize: 12 }}>🤖 How do I pay?</button>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="row g-3">
         {[
-          { label:"Total",   value:`₱${total.toLocaleString()}`,   color:"text-slate-800", bg:"bg-slate-50 border-slate-200" },
-          { label:"Paid",    value:`₱${paid.toLocaleString()}`,    color:"text-green-600", bg:"bg-green-50 border-green-200" },
-          { label:"Balance", value:`₱${balance.toLocaleString()}`, color:"text-red-500",   bg:"bg-red-50   border-red-200"   },
+          { label:"Total",   value:`₱${total.toLocaleString()}`,   cls:"bg-light border-secondary"   },
+          { label:"Paid",    value:`₱${paid.toLocaleString()}`,    cls:"bg-success-subtle border-success text-success" },
+          { label:"Balance", value:`₱${balance.toLocaleString()}`, cls:"bg-danger-subtle border-danger text-danger"   },
         ].map(s => (
-          <div key={s.label} className={`rounded-2xl border p-4 text-center ${s.bg}`}>
-            <div className="text-slate-400 text-xs mb-1">{s.label}</div>
-            <div className={`text-lg font-extrabold ${s.color}`}>{s.value}</div>
-          </div>
-        ))}
-      </div>
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        {fees.map((f, i) => (
-          <div key={i} className="flex items-center justify-between px-5 py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
-            <span className="text-slate-700 text-sm font-medium">{f.label}</span>
-            <div className="flex items-center gap-3">
-              <span className="text-slate-600 text-sm font-semibold">₱{f.amount.toLocaleString()}</span>
-              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${f.paid ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500"}`}>
-                {f.paid ? "Paid" : "Unpaid"}
-              </span>
+          <div key={s.label} className="col-4">
+            <div className={`rounded-3 border p-3 text-center ${s.cls}`}>
+              <div className="text-muted small mb-1">{s.label}</div>
+              <div className="fw-black fs-5">{s.value}</div>
             </div>
           </div>
         ))}
       </div>
-      <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-colors shadow-md shadow-blue-200 text-base">
-        Pay Balance
-      </button>
+      <div className="card border-0 shadow-sm rounded-3">
+        <ul className="list-group list-group-flush rounded-3">
+          {fees.map((f, i) => (
+            <li key={i} className="list-group-item d-flex align-items-center justify-content-between px-4 py-3">
+              <span className="small fw-medium text-dark">{f.label}</span>
+              <div className="d-flex align-items-center gap-3">
+                <span className="small fw-semibold text-dark">₱{f.amount.toLocaleString()}</span>
+                <span className={`badge ${f.paid ? "bg-success-subtle text-success border border-success-subtle" : "bg-danger-subtle text-danger border border-danger-subtle"}`}>
+                  {f.paid ? "Paid" : "Unpaid"}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <button className="btn btn-inform w-100 py-3 rounded-3 fw-bold fs-6">Pay Balance</button>
     </div>
   );
 }
 
-/* ══════════════════════════════════════════
-   LIBRARY VIEW — #6 Document request helper
-══════════════════════════════════════════ */
+/* ── Library View ── */
 function LibraryView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert: (p: string) => void }) {
   const [search, setSearch] = useState("");
   const borrowed = books.filter(b => !b.available);
@@ -406,209 +318,155 @@ function LibraryView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert:
     b.title.toLowerCase().includes(search.toLowerCase()) ||
     b.author.toLowerCase().includes(search.toLowerCase())
   );
+
   return (
-    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
+    <div className="d-flex flex-column gap-4">
       <BackBtn onClick={onBack} />
-      <div className="flex items-start justify-between gap-3">
+      <div className="d-flex align-items-start justify-content-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-slate-800 font-extrabold text-2xl">Library</h2>
-          <p className="text-slate-400 text-sm">{books.filter(b=>b.available).length} available · {borrowed.length} borrowed</p>
+          <h2 className="fw-black fs-4 text-dark mb-0">Library</h2>
+          <p className="text-muted small mb-0">{books.filter(b => b.available).length} available · {borrowed.length} borrowed</p>
         </div>
-        <button
-          onClick={() => onAskJobert("What are the library hours at Benedicto College? How do I borrow and return books? Are there any penalties for late returns?")}
-          className="shrink-0 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 text-xs font-semibold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5"
-        >
-          🤖 Library guide
-        </button>
+        <button onClick={() => onAskJobert("What are the library hours? How do I borrow and return books? Are there penalties for late returns?")}
+          className="btn btn-outline-primary btn-sm flex-shrink-0" style={{ fontSize: 12 }}>🤖 Library guide</button>
       </div>
+
       {borrowed.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
-          <div className="text-yellow-700 font-bold text-sm mb-2">📚 Currently Borrowed</div>
+        <div className="alert alert-warning rounded-3 py-3">
+          <div className="fw-bold small mb-2">📚 Currently Borrowed</div>
           {borrowed.map((b, i) => (
-            <div key={i} className="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 border border-yellow-100 mb-2 last:mb-0">
-              <span className="text-slate-700 text-sm font-medium">{b.title}</span>
-              <span className="text-xs font-semibold text-red-500 bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">Due {b.due}</span>
+            <div key={i} className="d-flex justify-content-between align-items-center bg-white rounded-3 px-3 py-2 border border-warning-subtle mb-2 last:mb-0">
+              <span className="small fw-medium text-dark">{b.title}</span>
+              <span className="badge bg-danger-subtle text-danger border border-danger-subtle">Due {b.due}</span>
             </div>
           ))}
         </div>
       )}
-      <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2.5 shadow-sm">
-        <span className="text-slate-400">🔍</span>
+
+      <div className="input-group shadow-sm">
+        <span className="input-group-text bg-white border-end-0">🔍</span>
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search books..."
-          className="flex-1 text-sm text-slate-600 placeholder-slate-300 bg-transparent focus:outline-none" />
+          className="form-control border-start-0 rounded-end-3" />
       </div>
-      <div className="flex flex-col gap-3">
+
+      <div className="d-flex flex-column gap-2">
         {filtered.map((b, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-4 hover:border-blue-200 transition-all">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-xl shrink-0">📖</div>
-            <div className="flex-1 min-w-0">
-              <div className="text-slate-700 font-bold text-sm truncate">{b.title}</div>
-              <div className="text-slate-400 text-xs">{b.author} · {b.category}</div>
+          <div key={i} className="card border-0 shadow-sm rounded-3">
+            <div className="card-body p-3 d-flex align-items-center gap-3">
+              <div className="rounded-3 bg-warning-subtle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 44, height: 44, fontSize: 22 }}>📖</div>
+              <div className="flex-grow-1 overflow-hidden">
+                <div className="fw-bold small text-dark text-truncate">{b.title}</div>
+                <div className="text-muted" style={{ fontSize: 11 }}>{b.author} · {b.category}</div>
+              </div>
+              {b.available
+                ? <button className="btn btn-primary btn-sm flex-shrink-0">Borrow</button>
+                : <span className="badge bg-danger-subtle text-danger border border-danger-subtle flex-shrink-0">Due {b.due}</span>
+              }
             </div>
-            {b.available
-              ? <button className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">Borrow</button>
-              : <span className="shrink-0 text-xs font-semibold text-red-500 bg-red-50 border border-red-100 px-2.5 py-1 rounded-full">Due {b.due}</span>
-            }
           </div>
         ))}
       </div>
 
-      {/* #6 — Document request helper */}
-      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
-        <div className="text-slate-700 font-bold text-sm mb-3">📄 Need a Document?</div>
-        <p className="text-slate-500 text-xs mb-3">Not sure which document to request? Ask JOBERT to guide you.</p>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            { label:"Transcript of Records", prompt:"How do I request a Transcript of Records (TOR) at Benedicto College? What are the steps, requirements, fees, and processing time?" },
-            { label:"Certificate of Enrollment", prompt:"How do I get a Certificate of Enrollment at Benedicto College? What do I need to bring and how long does it take?" },
-            { label:"Good Moral Certificate", prompt:"How do I request a Good Moral Certificate at Benedicto College? What are the requirements and processing time?" },
-            { label:"Other Documents", prompt:"What documents can I request from the Registrar's Office at Benedicto College? I need help figuring out which one I need." },
-          ].map(d => (
-            <button key={d.label} onClick={() => onAskJobert(d.prompt)}
-              className="bg-white border border-blue-200 hover:border-blue-400 hover:bg-blue-50 text-slate-700 text-xs font-semibold px-3 py-2.5 rounded-xl transition-all text-left flex items-center gap-2">
-              🤖 {d.label}
-            </button>
-          ))}
+      <div className="card border-primary border-opacity-25 rounded-3 bg-primary bg-opacity-10">
+        <div className="card-body p-4">
+          <div className="fw-bold small text-dark mb-2">📄 Need a Document?</div>
+          <p className="text-muted small mb-3">Not sure which document to request? Ask JOBERT to guide you.</p>
+          <div className="row g-2">
+            {[
+              { label:"Transcript of Records",    prompt:"How do I request a Transcript of Records (TOR)? What are the steps, requirements, fees, and processing time?" },
+              { label:"Certificate of Enrollment",prompt:"How do I get a Certificate of Enrollment? What do I need to bring and how long does it take?" },
+              { label:"Good Moral Certificate",   prompt:"How do I request a Good Moral Certificate? What are the requirements and processing time?" },
+              { label:"Other Documents",          prompt:"What documents can I request from the Registrar's Office? I need help figuring out which one I need." },
+            ].map(d => (
+              <div key={d.label} className="col-6">
+                <button onClick={() => onAskJobert(d.prompt)}
+                  className="btn btn-outline-primary btn-sm w-100 text-start d-flex align-items-center gap-1" style={{ fontSize: 11 }}>
+                  🤖 {d.label}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-/* ══════════════════════════════════════════
-   TILE ICONS
-══════════════════════════════════════════ */
-function IconGrades()   { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-12 h-12"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>; }
-function IconSchedule() { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-12 h-12"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>; }
-function IconTuition()  { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-12 h-12"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="12" cy="15" r="2"/></svg>; }
-function IconLibrary()  { return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-12 h-12"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>; }
-
-/* ══════════════════════════════════════════
-   EVENT SLIDESHOW
-══════════════════════════════════════════ */
-const events = [
-  { title:"Now Accepting Enrollment", date:"S.Y. 2026 - 2027", desc:"Guaranteed No Tuition Fee for incoming Grade 11 students from public schools", bg:"from-orange-600 to-blue-800", emoji:"📋", img:"/event1.jpg" },
-  { title:"BC Cheetahs — MLBB",       date:"February 21-22, 2026", desc:"Catch the games live at SM Seaside City Cebu Cube Wing Atrium!", bg:"from-blue-700 to-orange-600", emoji:"🎮", img:"/event2.jpg" },
-  { title:"BC Cheetahs — MLBB S4",    date:"CESA Esports League Season 4", desc:"Shunix · Chas · Super K · Hurr Durr · 2EzyFor23 · Hades · Nicxy · Shion · Pewww", bg:"from-blue-800 to-yellow-600", emoji:"🏆", img:"/event3.jpg" },
-  { title:"BC Valorant Team",          date:"CESA Esports League", desc:"Pintsu · PitchBlack · Ekhyle626 · Ichanze · Mokken · Papins", bg:"from-red-700 to-blue-800", emoji:"🎯", img:"/event4.jpg" },
-  { title:"Sports Festival 2026",      date:"June 5, 2026", desc:"Compete in track, basketball, volleyball and more", bg:"from-green-500 to-teal-600", emoji:"🏆", img:"https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80" },
-  { title:"Graduation Ceremony 2026",  date:"June 28, 2026", desc:"Celebrate the Class of 2026 at the Main Auditorium", bg:"from-blue-500 to-indigo-700", emoji:"🎓", img:"https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80" },
+/* ── Dashboard Home ── */
+const tiles = [
+  { id: "grades"   as const, label: "View Grades",   icon: "📊", color: "#1e3a6e" },
+  { id: "schedule" as const, label: "View Schedule", icon: "📅", color: "#1e3a6e" },
+  { id: "tuition"  as const, label: "Tuition Fee",   icon: "💰", color: "#1e3a6e" },
+  { id: "library"  as const, label: "Library",       icon: "📚", color: "#1e3a6e" },
 ];
 
-function EventSlideshow() {
-  const [current, setCurrent] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setCurrent(p => (p+1) % events.length), 3000);
-    return () => clearInterval(id);
-  }, []);
+function DashboardHome({ setPanel, onAskJobert }: { setPanel: (p: "grades"|"schedule"|"tuition"|"library") => void; onAskJobert: (p: string) => void }) {
   return (
-    <div className="w-full relative" style={{ height:"280px" }}>
-      {events.map((e, i) => (
-        <div key={i} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: i===current ? 1 : 0 }}>
-          <img src={e.img} alt={e.title} className="w-full h-full object-cover" />
-          <div className={`absolute inset-0 bg-gradient-to-br ${e.bg} opacity-75`} />
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
-            <span className="text-5xl mb-3 drop-shadow-lg">{e.emoji}</span>
-            <div className="text-white font-extrabold text-2xl drop-shadow-md leading-tight">{e.title}</div>
-            <div className="text-white/90 text-sm mt-1.5 font-semibold">{e.date}</div>
-            <div className="text-white/75 text-sm mt-1 max-w-sm">{e.desc}</div>
+    <div className="card border-0 shadow-lg rounded-3 overflow-hidden" style={{ maxWidth: 640, width: "100%" }}>
+      {/* Hero banner */}
+      <div className="p-5 text-white text-center" style={{ background: "linear-gradient(135deg,#1e3a6e,#2563eb)" }}>
+        <div className="fw-black fs-3 mb-1">Welcome, Jamie Santos</div>
+        <div className="text-white-50 small">202400001 · BSCS Year 2 · 2nd Semester SY 2025–2026</div>
+        <div className="d-flex justify-content-center gap-2 mt-3 flex-wrap">
+          <span className="badge bg-white bg-opacity-20 border border-white border-opacity-25 text-white px-3 py-2">🎓 Active Student</span>
+          <span className="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2">🔔 Enrollment Open</span>
+        </div>
+      </div>
+
+      {/* Service tiles */}
+      <div className="card-body p-4">
+        <p className="text-muted text-uppercase small fw-semibold text-center mb-3" style={{ letterSpacing: "0.08em" }}>Quick Access</p>
+        <div className="row g-3 mb-4">
+          {tiles.map(t => (
+            <div key={t.id} className="col-6">
+              <button onClick={() => setPanel(t.id)}
+                className="btn w-100 py-4 d-flex flex-column align-items-center gap-2 rounded-3 text-white fw-bold border-0 shadow-sm"
+                style={{ background: `linear-gradient(145deg,${t.color},#2563eb)`, boxShadow: "0 4px 16px rgba(30,58,110,0.35)", transition: "transform 0.15s" }}
+                onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.03)")}
+                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}>
+                <span style={{ fontSize: 32 }}>{t.icon}</span>
+                <span className="small">{t.label}</span>
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Enrollment assistant */}
+        <div className="alert alert-primary rounded-3 mb-0">
+          <div className="fw-bold small mb-2">📋 Enrollment Assistant</div>
+          <p className="text-muted small mb-3">Need help with enrollment? Ask JOBERT to guide you step by step.</p>
+          <div className="d-flex flex-column gap-2">
+            {[
+              { step:1, title:"Check enrollment status",  desc:"Am I eligible to enroll this semester?",          prompt:"Am I eligible to enroll this semester? What are the requirements?" },
+              { step:2, title:"Select your subjects",     desc:"How do I choose the right subjects?",             prompt:"How do I choose the right subjects for my course this semester?" },
+              { step:3, title:"Submit enrollment form",   desc:"Where and how do I submit my enrollment?",        prompt:"Where and how do I submit my enrollment form at Benedicto College?" },
+              { step:4, title:"Pay enrollment fees",      desc:"What fees do I need to pay and where?",           prompt:"What fees do I need to pay for enrollment and where do I pay them?" },
+            ].map(s => (
+              <button key={s.step} onClick={() => onAskJobert(s.prompt)}
+                className="btn btn-outline-primary btn-sm text-start d-flex align-items-center gap-3 rounded-3 py-2 px-3">
+                <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style={{ width: 26, height: 26, fontSize: 12 }}>{s.step}</div>
+                <div className="flex-grow-1 overflow-hidden">
+                  <div className="fw-semibold text-dark" style={{ fontSize: 12 }}>{s.title}</div>
+                  <div className="text-muted text-truncate" style={{ fontSize: 11 }}>{s.desc}</div>
+                </div>
+                <span className="text-primary flex-shrink-0" style={{ fontSize: 11 }}>Ask 🤖</span>
+              </button>
+            ))}
           </div>
         </div>
-      ))}
-      <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">
-        {events.map((_,i) => <button key={i} onClick={() => setCurrent(i)} className={`rounded-full transition-all duration-300 ${i===current ? "w-5 h-2 bg-white" : "w-2 h-2 bg-white/40 hover:bg-white/70"}`}/>)}
       </div>
-      <button onClick={() => setCurrent(p => (p-1+events.length)%events.length)} className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center text-sm transition-all">&#8249;</button>
-      <button onClick={() => setCurrent(p => (p+1)%events.length)} className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/20 hover:bg-black/40 text-white flex items-center justify-center text-sm transition-all">&#8250;</button>
-    </div>
-  );
-}
 
-/* ══════════════════════════════════════════
-   #5 ENROLLMENT ASSISTANT — step-by-step
-══════════════════════════════════════════ */
-function EnrollmentAssistant({ onAskJobert }: { onAskJobert: (p: string) => void }) {
-  const steps = [
-    { step:1, title:"Check Pre-requisites",   desc:"Make sure you have passed all required subjects for the next semester.", prompt:"What are the pre-requisites I need to check before enrolling at Benedicto College?" },
-    { step:2, title:"Visit the Registrar",    desc:"Go to the Registrar's Office (Admin Bldg, Room 101) during office hours.", prompt:"What are the Registrar's Office hours at Benedicto College and what do I need to bring for enrollment?" },
-    { step:3, title:"Submit Enrollment Form", desc:"Fill out and submit your enrollment form with your chosen subjects.", prompt:"How do I fill out the enrollment form at Benedicto College? What subjects should I choose?" },
-    { step:4, title:"Pay Tuition Fees",       desc:"Proceed to the Cashier's Office to pay your fees.", prompt:"How do I pay my tuition fees during enrollment at Benedicto College? What payment methods are accepted?" },
-    { step:5, title:"Get Your Schedule",      desc:"Receive your official class schedule and student ID.", prompt:"After enrolling at Benedicto College, how do I get my official class schedule and student ID?" },
-  ];
-  return (
-    <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <div className="text-slate-700 font-bold text-sm">🎓 Enrollment Assistant</div>
-          <div className="text-slate-400 text-xs mt-0.5">Deadline: June 15, 2026</div>
-        </div>
-        <button onClick={() => onAskJobert("Walk me through the complete enrollment process at Benedicto College step by step.")}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5">
-          🤖 Full guide
-        </button>
-      </div>
-      <div className="flex flex-col gap-2">
-        {steps.map(s => (
-          <button key={s.step} onClick={() => onAskJobert(s.prompt)}
-            className="bg-white border border-blue-100 hover:border-blue-300 rounded-xl px-4 py-3 text-left flex items-center gap-3 transition-all hover:bg-blue-50 group">
-            <div className="w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shrink-0">{s.step}</div>
-            <div className="flex-1 min-w-0">
-              <div className="text-slate-700 text-xs font-semibold">{s.title}</div>
-              <div className="text-slate-400 text-xs truncate">{s.desc}</div>
-            </div>
-            <span className="text-blue-400 group-hover:text-blue-600 text-xs transition-colors shrink-0">Ask 🤖</span>
-          </button>
-        ))}
+      <div className="card-footer bg-white border-top text-center py-3">
+        <p className="text-muted small mb-1">© 2026 Benedicto College. All rights reserved.</p>
+        <Link href="/" className="text-muted small text-decoration-none">← Back to Kiosk</Link>
       </div>
     </div>
   );
 }
 
-/* ══════════════════════════════════════════
-   KIOSK HOME
-══════════════════════════════════════════ */
-function KioskHome({ setPanel, onAskJobert }: { setPanel: (p: Panel) => void; onAskJobert: (p: string) => void }) {
-  const tiles: { id: Panel; label: string; Icon: () => React.ReactElement }[] = [
-    { id:"grades",   label:"View Grades",   Icon: IconGrades   },
-    { id:"schedule", label:"View Schedule", Icon: IconSchedule },
-    { id:"tuition",  label:"Tuition Fee",   Icon: IconTuition  },
-    { id:"library",  label:"Library",       Icon: IconLibrary  },
-  ];
-  return (
-    <div className="flex flex-col items-center w-full max-w-2xl mx-auto rounded-3xl overflow-hidden shadow-2xl shadow-blue-100 border border-slate-100">
-      <div className="w-full" style={{ height:"280px" }}><EventSlideshow /></div>
-      <div className="w-full bg-white px-8 pt-7 pb-3">
-        <p className="text-center text-slate-800 font-extrabold text-2xl">Welcome, Jamie Santos</p>
-        <p className="text-center text-slate-400 text-sm mt-1">STU-2024-00123 · BSCS Year 2</p>
-      </div>
-      <div className="w-full bg-white px-8 pb-8 pt-5 grid grid-cols-2 gap-5">
-        {tiles.map(tile => (
-          <button key={tile.id} onClick={() => setPanel(tile.id)}
-            className="flex flex-col items-center justify-center gap-4 rounded-2xl py-10 px-4 text-white transition-all hover:scale-105 hover:shadow-2xl active:scale-95"
-            style={{ background:"linear-gradient(145deg,#1e3a6e,#1a3260)", boxShadow:"0 6px 24px rgba(30,58,110,0.4)" }}>
-            <div className="opacity-90 w-12 h-12 flex items-center justify-center"><tile.Icon /></div>
-            <span className="text-base font-bold tracking-wide">{tile.label}</span>
-          </button>
-        ))}
-      </div>
-      {/* #5 enrollment assistant on home */}
-      <div className="w-full bg-white px-8 pb-6">
-        <EnrollmentAssistant onAskJobert={onAskJobert} />
-      </div>
-      <div className="w-full bg-white border-t border-slate-100 px-8 py-5 flex flex-col items-center gap-2">
-        <div className="text-4xl">🎓</div>
-        <p className="text-slate-400 text-xs text-center">&copy; 2026 Benedicto College. All rights reserved.</p>
-        <Link href="/" className="text-slate-300 hover:text-slate-500 text-xs transition-colors">&larr; Back to Kiosk</Link>
-      </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════
-   PAGE
-══════════════════════════════════════════ */
+/* ── Page ── */
 export default function DashboardPage() {
-  const [panel, setPanel]           = useState<Panel>("home");
+  const [panel, setPanel]               = useState<Panel>("home");
   const [jobertPrompt, setJobertPrompt] = useState<string | undefined>(undefined);
 
   function askJobert(prompt: string) {
@@ -617,14 +475,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen kiosk-bg flex flex-col items-center justify-start py-8 px-4" suppressHydrationWarning>
-      {panel === "home"     && <KioskHome setPanel={setPanel} onAskJobert={askJobert} />}
-      {panel === "grades"   && <div className="w-full max-w-2xl"><GradesView   onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
-      {panel === "schedule" && <div className="w-full max-w-2xl"><ScheduleView onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
-      {panel === "tuition"  && <div className="w-full max-w-2xl"><TuitionView  onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
-      {panel === "library"  && <div className="w-full max-w-2xl"><LibraryView  onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
-
-      {/* #1 — JOBERT floating on every panel */}
+    <div className="kiosk-bg d-flex flex-column align-items-center justify-content-start py-4 px-3" style={{ minHeight: "100vh" }} suppressHydrationWarning>
+      {panel === "home"     && <DashboardHome setPanel={setPanel} onAskJobert={askJobert} />}
+      {panel === "grades"   && <div style={{ width: "100%", maxWidth: 640 }}><GradesView   onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
+      {panel === "schedule" && <div style={{ width: "100%", maxWidth: 640 }}><ScheduleView onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
+      {panel === "tuition"  && <div style={{ width: "100%", maxWidth: 640 }}><TuitionView  onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
+      {panel === "library"  && <div style={{ width: "100%", maxWidth: 640 }}><LibraryView  onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
       <JobertChat initialPrompt={jobertPrompt} />
     </div>
   );
