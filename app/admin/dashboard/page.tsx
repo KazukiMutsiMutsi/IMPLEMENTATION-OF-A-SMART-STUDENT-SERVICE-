@@ -45,42 +45,83 @@ const navItems = [
 function initials(name: string) { return name.split(" ").map(n => n[0]).join("").slice(0, 2); }
 
 /* ── Sidebar ── */
-function Sidebar({ active, setActive, show, setShow }: { active:string; setActive:(s:string)=>void; show:boolean; setShow:(b:boolean)=>void }) {
+function Sidebar({ active, setActive, show, setShow, onExpandChange }: { active:string; setActive:(s:string)=>void; show:boolean; setShow:(b:boolean)=>void; onExpandChange?: (expanded: boolean) => void }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const handleMouseEnter = () => {
+    setExpanded(true);
+    onExpandChange?.(true);
+  };
+
+  const handleMouseLeave = () => {
+    setExpanded(false);
+    onExpandChange?.(false);
+  };
+
   return (
     <>
       {show && <div className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-lg-none" style={{ zIndex:1040 }} onClick={() => setShow(false)} />}
-      <div className={`d-flex flex-column flex-shrink-0 position-fixed position-lg-static top-0 start-0 h-100 ${show ? "" : "d-none d-lg-flex"}`}
-        style={{ width: 256, zIndex: 1045, background: "linear-gradient(180deg,#1e1b4b 0%,#312e81 100%)", overflowY: "auto" }}>
+      <div 
+        className={`d-flex flex-column flex-shrink-0 position-fixed position-lg-static top-0 start-0 h-100 ${show ? "" : "d-none d-lg-flex"}`}
+        style={{ 
+          width: expanded ? 256 : 80, 
+          zIndex: 1045, 
+          background: "linear-gradient(180deg,#1e1b4b 0%,#312e81 100%)", 
+          overflowY: "auto",
+          transition: "width 0.3s ease",
+          overflowX: "hidden"
+        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
         {/* Logo */}
-        <div className="d-flex align-items-center gap-3 px-4 py-4 border-bottom border-white border-opacity-10">
+        <div className="d-flex align-items-center gap-3 px-4 py-4 border-bottom border-white border-opacity-10" style={{ minHeight: 80 }}>
           <img src="/image.png" alt="BC" className="rounded-circle flex-shrink-0" style={{ width:32, height:32, objectFit:"cover", border:"1px solid rgba(255,255,255,0.2)" }} />
-          <div className="rounded-3 d-flex align-items-center justify-content-center text-white fw-black flex-shrink-0" style={{ width:36, height:36, fontSize:14, background:"linear-gradient(135deg,#6366f1,#7c3aed)" }}>IN</div>
-          <div><div className="text-white fw-bold lh-1" style={{ fontSize:15 }}>INFORM</div><div style={{ color:"#818cf8", fontSize:11 }}>Admin Panel</div></div>
-          <button className="btn-close btn-close-white ms-auto d-lg-none" onClick={() => setShow(false)} />
+          {expanded && (
+            <>
+              <div className="rounded-3 d-flex align-items-center justify-content-center text-white fw-black flex-shrink-0" style={{ width:36, height:36, fontSize:14, background:"linear-gradient(135deg,#6366f1,#7c3aed)" }}>IN</div>
+              <div><div className="text-white fw-bold lh-1" style={{ fontSize:15 }}>INFORM</div><div style={{ color:"#818cf8", fontSize:11 }}>Admin Panel</div></div>
+            </>
+          )}
+          {expanded && <button className="btn-close btn-close-white ms-auto d-lg-none" onClick={() => setShow(false)} />}
         </div>
+        
         {/* Admin badge */}
-        <div className="mx-3 mt-3 mb-1 px-3 py-2 rounded-3 d-flex align-items-center gap-2" style={{ background:"rgba(99,102,241,0.2)", border:"1px solid rgba(99,102,241,0.35)" }}>
-          <span>🛡️</span>
-          <div><div style={{ color:"#a5b4fc", fontSize:12, fontWeight:700 }}>Administrator</div><div style={{ color:"rgba(165,180,252,0.6)", fontSize:11 }}>Full Access</div></div>
-        </div>
+        {expanded && (
+          <div className="mx-3 mt-3 mb-1 px-3 py-2 rounded-3 d-flex align-items-center gap-2" style={{ background:"rgba(99,102,241,0.2)", border:"1px solid rgba(99,102,241,0.35)" }}>
+            <span>🛡️</span>
+            <div><div style={{ color:"#a5b4fc", fontSize:12, fontWeight:700 }}>Administrator</div><div style={{ color:"rgba(165,180,252,0.6)", fontSize:11 }}>Full Access</div></div>
+          </div>
+        )}
+        
         {/* Nav */}
         <nav className="flex-grow-1 px-3 py-2 d-flex flex-column gap-1">
           {navItems.map(item => (
             <button key={item.id} onClick={() => { setActive(item.id); setShow(false); }}
               className={`btn text-start d-flex align-items-center gap-3 px-3 py-2 rounded-3 small fw-medium border-0 ${active === item.id ? "text-white" : ""}`}
-              style={{ color: active === item.id ? "#fff" : "rgba(255,255,255,0.5)", background: active === item.id ? "#4f46e5" : "transparent" }}>
-              <span>{item.icon}</span>{item.label}
+              style={{ 
+                color: active === item.id ? "#fff" : "rgba(255,255,255,0.5)", 
+                background: active === item.id ? "#4f46e5" : "transparent",
+                justifyContent: expanded ? "flex-start" : "center",
+                whiteSpace: "nowrap"
+              }}
+              title={item.label}>
+              <span style={{ fontSize: 18 }}>{item.icon}</span>
+              {expanded && <span>{item.label}</span>}
             </button>
           ))}
         </nav>
+        
         {/* User */}
-        <div className="px-3 py-4 border-top border-white border-opacity-10">
-          <div className="d-flex align-items-center gap-3 rounded-3 px-3 py-2" style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)" }}>
-            <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width:32, height:32, fontSize:12, background:"linear-gradient(135deg,#6366f1,#7c3aed)" }}>AD</div>
-            <div className="flex-grow-1 overflow-hidden"><div className="text-white small fw-semibold text-truncate">Admin User</div><div className="text-truncate" style={{ color:"rgba(255,255,255,0.3)", fontSize:11 }}>admin@inform.edu</div></div>
-            <Link href="/" className="text-decoration-none" style={{ color:"rgba(255,255,255,0.3)", fontSize:16 }} title="Log out">↩</Link>
+        {expanded && (
+          <div className="px-3 py-4 border-top border-white border-opacity-10">
+            <div className="d-flex align-items-center gap-3 rounded-3 px-3 py-2" style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)" }}>
+              <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width:32, height:32, fontSize:12, background:"linear-gradient(135deg,#6366f1,#7c3aed)" }}>AD</div>
+              <div className="flex-grow-1 overflow-hidden"><div className="text-white small fw-semibold text-truncate">Admin User</div><div className="text-truncate" style={{ color:"rgba(255,255,255,0.3)", fontSize:11 }}>admin@inform.edu</div></div>
+              <Link href="/" className="text-decoration-none" style={{ color:"rgba(255,255,255,0.3)", fontSize:16 }} title="Log out">↩</Link>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
@@ -671,6 +712,7 @@ function ReportsPanel() {
 export default function AdminDashboardPage() {
   const [activeNav, setActiveNav]   = useState("overview");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
   function renderPanel() {
     switch (activeNav) {
@@ -687,12 +729,43 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="d-flex" style={{ height:"100vh", overflow:"hidden", background:"#f0f4ff" }} suppressHydrationWarning>
-      <Sidebar active={activeNav} setActive={setActiveNav} show={mobileOpen} setShow={setMobileOpen} />
+      <Sidebar active={activeNav} setActive={setActiveNav} show={mobileOpen} setShow={setMobileOpen} onExpandChange={setSidebarExpanded} />
 
-      <div className="d-flex flex-column flex-grow-1 overflow-hidden">
+      {/* Desktop layout with sidebar margin */}
+      <div className="d-lg-flex d-none flex-column flex-grow-1 overflow-hidden" style={{ marginLeft: "80px", transition: "margin-left 0.3s ease" }}>
         {/* Topbar */}
         <header className="bg-white border-bottom px-3 px-sm-4 py-3 d-flex align-items-center gap-3 flex-shrink-0 shadow-sm">
           <button className="btn btn-link text-muted p-1 d-lg-none" onClick={() => setMobileOpen(true)}>
+            <div style={{ width:20, height:2, background:"currentColor", marginBottom:4 }} />
+            <div style={{ width:20, height:2, background:"currentColor", marginBottom:4 }} />
+            <div style={{ width:20, height:2, background:"currentColor" }} />
+          </button>
+          <div className="input-group flex-grow-1" style={{ maxWidth:400 }}>
+            <span className="input-group-text bg-light border-end-0 text-muted">🔍</span>
+            <input type="text" placeholder="Search students, records..." className="form-control bg-light border-start-0" />
+          </div>
+          <div className="d-flex align-items-center gap-3 ms-auto">
+            <span className="badge bg-success-subtle text-success border border-success-subtle d-none d-sm-flex align-items-center gap-1">
+              <span className="rounded-circle bg-success d-inline-block" style={{ width:7, height:7 }} />System Online
+            </span>
+            <button className="btn btn-link text-muted p-1 position-relative">
+              <span style={{ fontSize:20 }}>🔔</span>
+              <span className="position-absolute top-0 end-0 rounded-circle bg-danger" style={{ width:8, height:8 }} />
+            </button>
+            <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style={{ width:32, height:32, fontSize:12, background:"linear-gradient(135deg,#6366f1,#7c3aed)", cursor:"pointer" }}>AD</div>
+          </div>
+        </header>
+
+        <main className="flex-grow-1 overflow-auto p-3 p-sm-4">
+          {renderPanel()}
+        </main>
+      </div>
+
+      {/* Mobile layout without sidebar margin */}
+      <div className="d-flex d-lg-none flex-column flex-grow-1 overflow-hidden">
+        {/* Topbar */}
+        <header className="bg-white border-bottom px-3 px-sm-4 py-3 d-flex align-items-center gap-3 flex-shrink-0 shadow-sm">
+          <button className="btn btn-link text-muted p-1" onClick={() => setMobileOpen(true)}>
             <div style={{ width:20, height:2, background:"currentColor", marginBottom:4 }} />
             <div style={{ width:20, height:2, background:"currentColor", marginBottom:4 }} />
             <div style={{ width:20, height:2, background:"currentColor" }} />

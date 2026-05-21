@@ -50,7 +50,7 @@ function JobertChat({ initialPrompt }: { initialPrompt?: string }) {
         <div className="chat-panel">
           <div className="px-4 py-3 d-flex align-items-center gap-3 flex-shrink-0" style={{ background: "linear-gradient(135deg,#2563eb,#1d4ed8)" }}>
             <div className="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width: 36, height: 36, fontSize: 13 }}>AI</div>
-            <div className="flex-grow-1"><div className="text-white fw-bold small">JOBERT</div><div className="text-white-50" style={{ fontSize: 11 }}>Powered by Gemini AI</div></div>
+            <div className="flex-grow-1"><div className="text-white fw-bold small">JOBERT</div><div className="text-white-50" style={{ fontSize: 11 }}>Powered by Ollama AI</div></div>
             <span className="badge bg-success-subtle text-success border border-success-subtle" style={{ fontSize: 10 }}>Online</span>
           </div>
           <div className="flex-grow-1 overflow-auto p-3 d-flex flex-column gap-2" style={{ background: "#f8fafc" }}>
@@ -408,7 +408,7 @@ function DashboardHome({ setPanel, onAskJobert }: { setPanel: (p: "grades"|"sche
         <div className="fw-black fs-3 mb-1">Welcome, Jamie Santos</div>
         <div className="text-white-50 small">202400001 · BSCS Year 2 · 2nd Semester SY 2025–2026</div>
         <div className="d-flex justify-content-center gap-2 mt-3 flex-wrap">
-          <span className="badge bg-white bg-opacity-20 border border-white border-opacity-25 text-white px-3 py-2">🎓 Active Student</span>
+          <span className="badge bg-white bg-opacity-20 border border-white border-opacity-25 text-dark px-3 py-2">🎓 Active Student</span>
           <span className="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2">🔔 Enrollment Open</span>
         </div>
       </div>
@@ -430,35 +430,11 @@ function DashboardHome({ setPanel, onAskJobert }: { setPanel: (p: "grades"|"sche
             </div>
           ))}
         </div>
-
-        {/* Enrollment assistant */}
-        <div className="alert alert-primary rounded-3 mb-0">
-          <div className="fw-bold small mb-2">📋 Enrollment Assistant</div>
-          <p className="text-muted small mb-3">Need help with enrollment? Ask JOBERT to guide you step by step.</p>
-          <div className="d-flex flex-column gap-2">
-            {[
-              { step:1, title:"Check enrollment status",  desc:"Am I eligible to enroll this semester?",          prompt:"Am I eligible to enroll this semester? What are the requirements?" },
-              { step:2, title:"Select your subjects",     desc:"How do I choose the right subjects?",             prompt:"How do I choose the right subjects for my course this semester?" },
-              { step:3, title:"Submit enrollment form",   desc:"Where and how do I submit my enrollment?",        prompt:"Where and how do I submit my enrollment form at Benedicto College?" },
-              { step:4, title:"Pay enrollment fees",      desc:"What fees do I need to pay and where?",           prompt:"What fees do I need to pay for enrollment and where do I pay them?" },
-            ].map(s => (
-              <button key={s.step} onClick={() => onAskJobert(s.prompt)}
-                className="btn btn-outline-primary btn-sm text-start d-flex align-items-center gap-3 rounded-3 py-2 px-3">
-                <div className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style={{ width: 26, height: 26, fontSize: 12 }}>{s.step}</div>
-                <div className="flex-grow-1 overflow-hidden">
-                  <div className="fw-semibold text-dark" style={{ fontSize: 12 }}>{s.title}</div>
-                  <div className="text-muted text-truncate" style={{ fontSize: 11 }}>{s.desc}</div>
-                </div>
-                <span className="text-primary flex-shrink-0" style={{ fontSize: 11 }}>Ask 🤖</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       <div className="card-footer bg-white border-top text-center py-3">
         <p className="text-muted small mb-1">© 2026 Benedicto College. All rights reserved.</p>
-        <Link href="/" className="text-muted small text-decoration-none">← Back to Kiosk</Link>
+        <Link href="/login" className="btn btn-outline-primary btn-sm">← Back to Login</Link>
       </div>
     </div>
   );
