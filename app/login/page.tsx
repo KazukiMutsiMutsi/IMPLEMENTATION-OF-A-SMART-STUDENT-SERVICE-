@@ -71,7 +71,7 @@ function AIChat() {
       {open && (
         <div className="chat-panel">
           {/* header */}
-          <div className="px-4 py-3 d-flex align-items-center gap-3 flex-shrink-0" style={{ background: "linear-gradient(135deg,#2563eb,#1d4ed8)" }}>
+          <div className="px-4 py-3 d-flex align-items-center gap-3 flex-shrink-0" style={{ background: "linear-gradient(135deg,#1e40af,#dc2626)" }}>
             <div className="rounded-circle overflow-hidden flex-shrink-0 border border-white border-opacity-50" style={{ width: 36, height: 36 }}>
               <img src="/jobert-avatar.png" alt="JOBERT" style={{ width: 36, height: 36, objectFit: "cover", objectPosition: "center top" }} />
             </div>
@@ -178,12 +178,12 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="d-flex flex-column align-items-center gap-2">
           <div className="d-flex align-items-center gap-3">
-            <img src="/image.png" alt="BC" className="rounded-circle border" style={{ width: 56, height: 56, objectFit: "cover" }} />
+            <img src="/cfei-logo.jpg" alt="CFEI" className="rounded-circle border" style={{ width: 56, height: 56, objectFit: "cover" }} />
             <div className="vr" />
             <div className="rounded-3 bg-primary d-flex align-items-center justify-content-center text-white fw-black shadow" style={{ width: 56, height: 56, fontSize: 22 }}>IN</div>
           </div>
           <div className="fw-bold fs-5 text-dark">INFORM</div>
-          <div className="text-muted" style={{ fontSize: 12 }}>Benedicto College · Student Information System</div>
+          <div className="text-muted" style={{ fontSize: 12 }}>Cebu Far East Institute · Student Information System</div>
         </div>
 
         <hr className="w-100 my-0" />
@@ -257,28 +257,13 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="d-flex align-items-center gap-2 w-100">
-          <hr className="flex-grow-1 my-0" /><span className="text-muted small">or</span><hr className="flex-grow-1 my-0" />
-        </div>
-
-        <div className="row g-2 w-100">
-          {[{ label: "Google Account", icon: "G" }, { label: "Microsoft SSO", icon: "M" }].map(s => (
-            <div key={s.label} className="col-6">
-              <button className="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2 small">
-                <span className="rounded-circle bg-light border d-flex align-items-center justify-content-center fw-bold" style={{ width: 20, height: 20, fontSize: 11 }}>{s.icon}</span>
-                {s.label}
-              </button>
-            </div>
-          ))}
-        </div>
-
         <p className="text-muted small text-center mb-0">
           Need help?{" "}
           <a href="#" className="text-primary text-decoration-none">Contact the Registrar&apos;s Office</a>
         </p>
       </div>
 
-      <p className="text-muted small mt-4">© 2026 INFORM University. All rights reserved.</p>
+      <p className="text-muted small mt-4">© 2026 Cebu Far East Institute. All rights reserved.</p>
       <AIChat />
     </div>
   );

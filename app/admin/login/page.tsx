@@ -45,12 +45,12 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="d-flex flex-column align-items-center gap-2">
           <div className="d-flex align-items-center gap-3">
-            <img src="/image.png" alt="BC" className="rounded-circle" style={{ width: 56, height: 56, objectFit: "cover", border: "2px solid rgba(255,255,255,0.2)" }} />
+            <img src="/cfei-logo.jpg" alt="CFEI" className="rounded-circle" style={{ width: 56, height: 56, objectFit: "cover", border: "2px solid rgba(255,255,255,0.2)" }} />
             <div style={{ width: 1, height: 40, background: "rgba(255,255,255,0.2)" }} />
             <div className="rounded-3 d-flex align-items-center justify-content-center text-white fw-black shadow" style={{ width: 56, height: 56, fontSize: 22, background: "linear-gradient(135deg,#6366f1,#7c3aed)" }}>IN</div>
           </div>
           <div className="text-white fw-bold fs-5">INFORM</div>
-          <div style={{ color: "#a5b4fc", fontSize: 12 }}>Benedicto College · Student Information System</div>
+          <div style={{ color: "#a5b4fc", fontSize: 12 }}>Cebu Far East Institute · Student Information System</div>
           <span className="badge rounded-pill d-flex align-items-center gap-1 px-3 py-2" style={{ background: "rgba(99,102,241,0.2)", border: "1px solid rgba(99,102,241,0.35)", color: "#a5b4fc", fontSize: 12 }}>
             🛡️ Administrator Access
           </span>

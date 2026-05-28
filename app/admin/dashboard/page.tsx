@@ -5,14 +5,14 @@ import Link from "next/link";
 
 /* ── Data ── */
 const students = [
-  { id:"STU-2024-001", name:"Jamie Santos",    course:"BSCS", year:2, gwa:1.75, status:"Active",   tuition:"Paid"   },
-  { id:"STU-2024-002", name:"Maria Reyes",     course:"BSED", year:1, gwa:2.00, status:"Active",   tuition:"Unpaid" },
-  { id:"STU-2024-003", name:"Carlo Dela Cruz", course:"BSBA", year:3, gwa:1.50, status:"Active",   tuition:"Paid"   },
-  { id:"STU-2024-004", name:"Ana Villanueva",  course:"BSN",  year:2, gwa:2.25, status:"Inactive", tuition:"Unpaid" },
-  { id:"STU-2024-005", name:"Luis Fernandez",  course:"BSCS", year:4, gwa:1.25, status:"Active",   tuition:"Paid"   },
-  { id:"STU-2024-006", name:"Rosa Bautista",   course:"BSED", year:1, gwa:2.50, status:"Active",   tuition:"Paid"   },
-  { id:"STU-2024-007", name:"Mark Uy",         course:"BSBA", year:2, gwa:3.00, status:"Active",   tuition:"Unpaid" },
-  { id:"STU-2024-008", name:"Lena Cruz",       course:"BSN",  year:3, gwa:1.75, status:"Active",   tuition:"Paid"   },
+  { id:"STU-2024-001", name:"Jamie Santos",    track:"STEM", grade:11, gwa:1.75, status:"Active",   tuition:"Paid"   },
+  { id:"STU-2024-002", name:"Maria Reyes",     track:"HUMMS", grade:11, gwa:2.00, status:"Active",   tuition:"Unpaid" },
+  { id:"STU-2024-003", name:"Carlo Dela Cruz", track:"ABM", grade:12, gwa:1.50, status:"Active",   tuition:"Paid"   },
+  { id:"STU-2024-004", name:"Ana Villanueva",  track:"GAS",  grade:11, gwa:2.25, status:"Inactive", tuition:"Unpaid" },
+  { id:"STU-2024-005", name:"Luis Fernandez",  track:"STEM", grade:12, gwa:1.25, status:"Active",   tuition:"Paid"   },
+  { id:"STU-2024-006", name:"Rosa Bautista",   track:"TVL", grade:11, gwa:2.50, status:"Active",   tuition:"Paid"   },
+  { id:"STU-2024-007", name:"Mark Uy",         track:"ABM", grade:12, gwa:3.00, status:"Active",   tuition:"Unpaid" },
+  { id:"STU-2024-008", name:"Lena Cruz",       track:"HUMMS",  grade:11, gwa:1.75, status:"Active",   tuition:"Paid"   },
 ];
 
 const announcements = [
@@ -38,8 +38,6 @@ const navItems = [
   { id:"enrollment",    label:"Enrollment",    icon:"📋" },
   { id:"tuition",       label:"Tuition",       icon:"💰" },
   { id:"announcements", label:"Announcements", icon:"📢" },
-  { id:"library",       label:"Library",       icon:"📚" },
-  { id:"reports",       label:"Reports",       icon:"📈" },
 ];
 
 function initials(name: string) { return name.split(" ").map(n => n[0]).join("").slice(0, 2); }
@@ -76,7 +74,7 @@ function Sidebar({ active, setActive, show, setShow, onExpandChange }: { active:
       >
         {/* Logo */}
         <div className="d-flex align-items-center gap-3 px-4 py-4 border-bottom border-white border-opacity-10" style={{ minHeight: 80 }}>
-          <img src="/image.png" alt="BC" className="rounded-circle flex-shrink-0" style={{ width:32, height:32, objectFit:"cover", border:"1px solid rgba(255,255,255,0.2)" }} />
+          <img src="/cfei-logo.jpg" alt="CFEI" className="rounded-circle flex-shrink-0" style={{ width:32, height:32, objectFit:"cover", border:"1px solid rgba(255,255,255,0.2)" }} />
           {expanded && (
             <>
               <div className="rounded-3 d-flex align-items-center justify-content-center text-white fw-black flex-shrink-0" style={{ width:36, height:36, fontSize:14, background:"linear-gradient(135deg,#6366f1,#7c3aed)" }}>IN</div>
@@ -140,7 +138,6 @@ function Overview({ setActive }: { setActive: (s: string) => void }) {
     { id:"enrollment",    label:"Enrollment",    icon:"📋", bg:"#14b8a6" },
     { id:"tuition",       label:"Tuition",       icon:"💰", bg:"#f59e0b" },
     { id:"announcements", label:"Announcements", icon:"📢", bg:"#ec4899" },
-    { id:"reports",       label:"Reports",       icon:"📈", bg:"#22c55e" },
   ];
 
   return (
@@ -281,7 +278,7 @@ function StudentsPanel() {
                 <th className="small text-muted fw-semibold text-uppercase ps-4" style={{ letterSpacing:"0.05em" }}>#</th>
                 <th className="small text-muted fw-semibold text-uppercase" style={{ letterSpacing:"0.05em" }}>Name</th>
                 <th className="small text-muted fw-semibold text-uppercase d-none d-sm-table-cell" style={{ letterSpacing:"0.05em" }}>ID</th>
-                <th className="small text-muted fw-semibold text-uppercase d-none d-lg-table-cell" style={{ letterSpacing:"0.05em" }}>Course</th>
+                <th className="small text-muted fw-semibold text-uppercase d-none d-lg-table-cell" style={{ letterSpacing:"0.05em" }}>Track</th>
                 <th className="small text-muted fw-semibold text-uppercase d-none d-lg-table-cell" style={{ letterSpacing:"0.05em" }}>GWA</th>
                 <th className="small text-muted fw-semibold text-uppercase" style={{ letterSpacing:"0.05em" }}>Status</th>
                 <th className="small text-muted fw-semibold text-uppercase" style={{ letterSpacing:"0.05em" }}>Tuition</th>
@@ -300,7 +297,7 @@ function StudentsPanel() {
                       </div>
                     </td>
                     <td className="d-none d-sm-table-cell font-mono text-muted small">{s.id}</td>
-                    <td className="d-none d-lg-table-cell text-muted small">{s.course} Y{s.year}</td>
+                    <td className="d-none d-lg-table-cell text-muted small">{s.track} Grade {s.grade}</td>
                     <td className="d-none d-lg-table-cell fw-bold text-primary small">{s.gwa}</td>
                     <td><span className={`badge ${s.status === "Active" ? "bg-success-subtle text-success border border-success-subtle" : "bg-secondary-subtle text-secondary border border-secondary-subtle"}`}>{s.status}</span></td>
                     <td><span className={`badge ${s.tuition === "Paid" ? "bg-primary-subtle text-primary border border-primary-subtle" : "bg-danger-subtle text-danger border border-danger-subtle"}`}>{s.tuition}</span></td>
@@ -344,7 +341,7 @@ function GradesPanel() {
         </div>
         <div className="flex-grow-1 rounded-3 p-3 d-flex align-items-center gap-3 bg-primary bg-opacity-10 border border-primary border-opacity-25">
           <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width:44, height:44, fontSize:16 }}>{initials(student.name)}</div>
-          <div className="flex-grow-1"><div className="fw-bold text-dark">{student.name}</div><div className="text-muted small">{student.id} · {student.course} Year {student.year}</div></div>
+          <div className="flex-grow-1"><div className="fw-bold text-dark">{student.name}</div><div className="text-muted small">{student.id} · {student.track} Grade {student.grade}</div></div>
           <div className="text-end"><div className="fw-black fs-3 text-primary">{avg}%</div><div className="text-muted small">General Average</div></div>
         </div>
       </div>
@@ -388,17 +385,17 @@ function GradesPanel() {
 /* ── Enrollment Panel ── */
 function EnrollmentPanel() {
   const enrollments = [
-    { name:"Jamie Santos",    id:"STU-2024-001", course:"BSCS", year:2, date:"May 18, 2026", status:"Confirmed" },
-    { name:"Maria Reyes",     id:"STU-2024-002", course:"BSED", year:1, date:"May 19, 2026", status:"Pending"   },
-    { name:"Carlo Dela Cruz", id:"STU-2024-003", course:"BSBA", year:3, date:"May 17, 2026", status:"Confirmed" },
-    { name:"Ana Villanueva",  id:"STU-2024-004", course:"BSN",  year:2, date:"May 20, 2026", status:"Pending"   },
-    { name:"Luis Fernandez",  id:"STU-2024-005", course:"BSCS", year:4, date:"May 16, 2026", status:"Confirmed" },
-    { name:"Rosa Bautista",   id:"STU-2024-006", course:"BSED", year:1, date:"May 20, 2026", status:"Confirmed" },
+    { name:"Jamie Santos",    id:"STU-2024-001", track:"STEM", grade:11, date:"May 18, 2026", status:"Confirmed" },
+    { name:"Maria Reyes",     id:"STU-2024-002", track:"HUMMS", grade:11, date:"May 19, 2026", status:"Pending"   },
+    { name:"Carlo Dela Cruz", id:"STU-2024-003", track:"ABM", grade:12, date:"May 17, 2026", status:"Confirmed" },
+    { name:"Ana Villanueva",  id:"STU-2024-004", track:"GAS",  grade:11, date:"May 20, 2026", status:"Pending"   },
+    { name:"Luis Fernandez",  id:"STU-2024-005", track:"STEM", grade:12, date:"May 16, 2026", status:"Confirmed" },
+    { name:"Rosa Bautista",   id:"STU-2024-006", track:"TVL", grade:11, date:"May 20, 2026", status:"Confirmed" },
   ];
   return (
     <div className="d-flex flex-column gap-4">
       <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
-        <div><h2 className="fw-black fs-4 text-dark mb-0">Enrollment</h2><p className="text-muted small mb-0">1st Semester · Deadline: June 15, 2026</p></div>
+        <div><h2 className="fw-black fs-4 text-dark mb-0">Enrollment</h2><p className="text-muted small mb-0">School Year 2025–2026 · Deadline: June 15, 2026</p></div>
         <span className="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2">🔔 Enrollment period is open</span>
       </div>
       <div className="row g-3">
@@ -424,7 +421,7 @@ function EnrollmentPanel() {
               <tr>
                 <th className="small text-muted fw-semibold text-uppercase ps-4" style={{ letterSpacing:"0.05em" }}>Student</th>
                 <th className="small text-muted fw-semibold text-uppercase d-none d-sm-table-cell" style={{ letterSpacing:"0.05em" }}>ID</th>
-                <th className="small text-muted fw-semibold text-uppercase d-none d-lg-table-cell" style={{ letterSpacing:"0.05em" }}>Course</th>
+                <th className="small text-muted fw-semibold text-uppercase d-none d-lg-table-cell" style={{ letterSpacing:"0.05em" }}>Track</th>
                 <th className="small text-muted fw-semibold text-uppercase d-none d-sm-table-cell" style={{ letterSpacing:"0.05em" }}>Date</th>
                 <th className="small text-muted fw-semibold text-uppercase" style={{ letterSpacing:"0.05em" }}>Status</th>
                 <th className="small text-muted fw-semibold text-uppercase text-end pe-4" style={{ letterSpacing:"0.05em" }}>Action</th>
@@ -440,7 +437,7 @@ function EnrollmentPanel() {
                     </div>
                   </td>
                   <td className="d-none d-sm-table-cell font-mono text-muted small">{e.id}</td>
-                  <td className="d-none d-lg-table-cell text-muted small">{e.course} Y{e.year}</td>
+                  <td className="d-none d-lg-table-cell text-muted small">{e.track} Grade {e.grade}</td>
                   <td className="d-none d-sm-table-cell text-muted small">{e.date}</td>
                   <td><span className={`badge ${e.status==="Confirmed" ? "bg-success-subtle text-success border border-success-subtle" : "bg-warning-subtle text-warning border border-warning-subtle"}`}>{e.status}</span></td>
                   <td className="text-end pe-4">{e.status === "Pending" && <button className="btn btn-primary btn-sm" style={{ fontSize:11 }}>Confirm</button>}</td>
@@ -484,7 +481,7 @@ function TuitionPanel() {
             <thead className="table-light">
               <tr>
                 <th className="small text-muted fw-semibold text-uppercase ps-4" style={{ letterSpacing:"0.05em" }}>Student</th>
-                <th className="small text-muted fw-semibold text-uppercase d-none d-sm-table-cell" style={{ letterSpacing:"0.05em" }}>Course</th>
+                <th className="small text-muted fw-semibold text-uppercase d-none d-sm-table-cell" style={{ letterSpacing:"0.05em" }}>Track</th>
                 <th className="small text-muted fw-semibold text-uppercase text-end d-none d-sm-table-cell" style={{ letterSpacing:"0.05em" }}>Total</th>
                 <th className="small text-muted fw-semibold text-uppercase text-end d-none d-sm-table-cell" style={{ letterSpacing:"0.05em" }}>Paid</th>
                 <th className="small text-muted fw-semibold text-uppercase text-end" style={{ letterSpacing:"0.05em" }}>Balance</th>
@@ -500,7 +497,7 @@ function TuitionPanel() {
                       <span className="small fw-medium text-dark">{r.name}</span>
                     </div>
                   </td>
-                  <td className="d-none d-sm-table-cell text-muted small">{r.course}</td>
+                  <td className="d-none d-sm-table-cell text-muted small">{r.track} Grade {r.grade}</td>
                   <td className="d-none d-sm-table-cell text-muted small text-end">₱{r.total.toLocaleString()}</td>
                   <td className="d-none d-sm-table-cell text-success small fw-semibold text-end">₱{r.paid.toLocaleString()}</td>
                   <td className={`small fw-semibold text-end ${r.balance>0?"text-danger":"text-muted"}`}>{r.balance>0?`₱${r.balance.toLocaleString()}`:"—"}</td>

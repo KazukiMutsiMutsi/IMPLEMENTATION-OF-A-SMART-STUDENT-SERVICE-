@@ -25,7 +25,7 @@ export default function LoadingScreen({ onDone }: { onDone: () => void }) {
       className="position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center"
       style={{
         zIndex: 9999,
-        background: "linear-gradient(160deg,#e8eeff 0%,#f0f4ff 50%,#eaf0ff 100%)",
+        background: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)",
         opacity: fadeOut ? 0 : 1,
         transition: "opacity 0.5s",
         pointerEvents: fadeOut ? "none" : "auto",
@@ -35,32 +35,32 @@ export default function LoadingScreen({ onDone }: { onDone: () => void }) {
         {/* Spinning ring + logo */}
         <div className="position-relative d-flex align-items-center justify-content-center">
           <div className="position-absolute rounded-circle animate-spin"
-            style={{ width: 176, height: 176, border: "4px solid transparent", borderTopColor: "#2563eb", borderRightColor: "#c0440a", animationDuration: "1.4s" }} />
-          <div className="rounded-circle bg-white shadow d-flex align-items-center justify-content-center overflow-hidden p-2"
-            style={{ width: 144, height: 144, boxShadow: "0 8px 32px rgba(37,99,235,0.2)" }}>
-            <Image src="/image.png" alt="Benedicto College" width={128} height={128} priority />
+            style={{ width: 180, height: 180, border: "3px solid transparent", borderTopColor: "#f59e0b", borderRightColor: "#e11d48", animationDuration: "2s" }} />
+          <div className="rounded-circle bg-white shadow d-flex align-items-center justify-content-center overflow-hidden p-3"
+            style={{ width: 150, height: 150, boxShadow: "0 20px 50px rgba(245, 158, 11, 0.2)" }}>
+            <Image src="/cfei-logo.jpg" alt="Cebu Far East Institute" width={140} height={140} priority />
           </div>
         </div>
 
         {/* School name */}
         <div className="text-center">
-          <h1 className="fw-black fs-4 text-dark mb-1">Benedicto College</h1>
-          <p className="text-muted fst-italic small mb-0">Your Education... Our Mission</p>
+          <h1 className="fw-black fs-3 text-white mb-2">Cebu Far East Institute</h1>
+          <p className="text-white-50 fst-italic small mb-0">Excellence in Education</p>
         </div>
 
         {/* System badge */}
-        <div className="d-flex align-items-center gap-2 bg-primary rounded-pill px-4 py-2 shadow">
-          <span className="text-white fw-black" style={{ letterSpacing: "0.15em" }}>INFORM</span>
+        <div className="d-flex align-items-center gap-2 rounded-pill px-5 py-3 shadow" style={{ background: "linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(225, 29, 72, 0.1))", border: "1px solid rgba(255, 255, 255, 0.2)" }}>
+          <span className="text-white fw-black" style={{ letterSpacing: "0.2em", fontSize: "0.95rem" }}>INFORM</span>
           <span className="text-white-50 small">Student Information System</span>
         </div>
 
         {/* Progress bar */}
-        <div className="d-flex flex-column align-items-center gap-2" style={{ width: 256 }}>
-          <div className="progress w-100" style={{ height: 6 }}>
+        <div className="d-flex flex-column align-items-center gap-3" style={{ width: 280 }}>
+          <div className="progress w-100" style={{ height: 4, background: "rgba(255, 255, 255, 0.1)", borderRadius: "2px", overflow: "hidden" }}>
             <div className="progress-bar" role="progressbar"
-              style={{ width: `${Math.min(progress, 100)}%`, background: "linear-gradient(90deg,#2563eb,#c0440a)", transition: "width 0.075s" }} />
+              style={{ width: `${Math.min(progress, 100)}%`, background: "linear-gradient(90deg, #f59e0b, #e11d48)", transition: "width 0.075s", borderRadius: "2px" }} />
           </div>
-          <p className="text-muted small mb-0">Loading system...</p>
+          <p className="text-white-50 small mb-0">Loading system...</p>
         </div>
       </div>
     </div>

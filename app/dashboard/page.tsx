@@ -4,13 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import type React from "react";
 import Link from "next/link";
 
-type Panel = "home" | "grades" | "schedule" | "tuition" | "library";
+type Panel = "home" | "grades" | "schedule" | "tuition";
 type JMsg  = { role: "ai" | "user"; text: string; feedback?: "up" | "down" | null };
 
 /* ── JOBERT Chat ── */
 function JobertChat({ initialPrompt }: { initialPrompt?: string }) {
   const [open, setOpen]     = useState(false);
-  const [msgs, setMsgs]     = useState<JMsg[]>([{ role: "ai", text: "Hi! I am JOBERT, your INFORM Assistant. I can help you understand your grades, schedule, tuition, library, and more. What do you need?" }]);
+  const [msgs, setMsgs]     = useState<JMsg[]>([{ role: "ai", text: "Hi! I am JOBERT, your INFORM Assistant. I can help you understand your grades, schedule, tuition, and more. What do you need?" }]);
   const [input, setInput]   = useState("");
   const [typing, setTyping] = useState(false);
   const bottomRef           = useRef<HTMLDivElement>(null);
@@ -39,7 +39,7 @@ function JobertChat({ initialPrompt }: { initialPrompt?: string }) {
 
   return (
     <>
-      <button className="chat-fab" onClick={() => setOpen(!open)}>
+      <button className="chat-fab" onClick={() => setOpen(!open)} style={{ position: "fixed", bottom: "24px", right: "24px", zIndex: 1050 }}>
         {open
           ? <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" width="22" height="22"><path d="M18 6L6 18M6 6l12 12"/></svg>
           : <img src="/jobert-avatar.png" alt="JOBERT" style={{ width: 48, height: 48, objectFit: "cover", objectPosition: "center top", borderRadius: "50%" }} />
@@ -144,41 +144,31 @@ const fees = [
   { label:"Tuition Fee",          amount:18500, paid:true  },
   { label:"Miscellaneous Fee",    amount: 2200, paid:true  },
   { label:"Laboratory Fee",       amount: 1500, paid:true  },
-  { label:"Library Fee",          amount:  500, paid:false },
   { label:"Student Activity Fee", amount:  800, paid:false },
   { label:"ID / Registration",    amount:  350, paid:false },
-];
-
-const books = [
-  { title:"Calculus: Early Transcendentals",  author:"James Stewart",       category:"Mathematics", available:true,  due:null    },
-  { title:"Conceptual Physics",               author:"Paul G. Hewitt",      category:"Physics",     available:false, due:"Jun 2" },
-  { title:"Complete Works of Shakespeare",    author:"W. Shakespeare",      category:"Literature",  available:true,  due:null    },
-  { title:"Chemistry: The Central Science",   author:"Brown & LeMay",       category:"Chemistry",   available:true,  due:null    },
-  { title:"Sapiens: A Brief History",         author:"Yuval Noah Harari",   category:"History",     available:false, due:"Jun 5" },
-  { title:"Introduction to Algorithms",       author:"Cormen et al.",       category:"CS",          available:true,  due:null    },
 ];
 
 /* ── Back button ── */
 function BackBtn({ onClick }: { onClick: () => void }) {
   return (
-    <button onClick={onClick} className="btn btn-link text-muted text-decoration-none ps-0 mb-3 d-flex align-items-center gap-1 small fw-semibold">
+    <button onClick={onClick} className="btn btn-link text-primary text-decoration-none ps-0 mb-4 d-flex align-items-center gap-1 small fw-semibold" style={{ fontSize: 13 }}>
       ← Back to Dashboard
     </button>
   );
 }
 
 /* ── Grades View ── */
-function GradesView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert: (p: string) => void }) {
+function GradesView({ onBack, onAskJobert, darkMode }: { onBack: () => void; onAskJobert: (p: string) => void; darkMode: boolean }) {
   const avg = Math.round(gradeData.reduce((a, g) => a + g.pct, 0) / gradeData.length);
   return (
-    <div className="d-flex flex-column gap-4">
+    <div className="d-flex flex-column gap-4 w-100">
       <BackBtn onClick={onBack} />
-      <div className="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+      <div className="d-flex flex-column flex-sm-row align-items-start justify-content-between gap-3">
         <div>
-          <h2 className="fw-black fs-4 text-dark mb-0">My Grades</h2>
-          <p className="text-muted small mb-0">1st Semester · 2025–2026</p>
+          <h2 className="fw-black fs-4 text-white mb-0">My Grades</h2>
+          <p className="text-white-50 small mb-0">1st Semester · 2025–2026</p>
         </div>
-        <div className="d-flex flex-column align-items-center gap-1">
+        <div className="d-flex flex-column align-items-center gap-1 flex-shrink-0">
           <div className="bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3 px-4 py-2 text-center">
             <div className="text-muted" style={{ fontSize: 11 }}>General Average</div>
             <div className="fw-black fs-3 text-primary">{avg}%</div>
@@ -219,19 +209,19 @@ function GradesView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert: 
 }
 
 /* ── Schedule View ── */
-function ScheduleView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert: (p: string) => void }) {
+function ScheduleView({ onBack, onAskJobert, darkMode }: { onBack: () => void; onAskJobert: (p: string) => void; darkMode: boolean }) {
   const days = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
   const todayIdx = Math.min(new Date().getDay() - 1, 4);
   const [day, setDay] = useState(days[todayIdx >= 0 ? todayIdx : 0]);
   const subjectList = timetable[day].map(c => c.subject).join(", ");
 
   return (
-    <div className="d-flex flex-column gap-4">
+    <div className="d-flex flex-column gap-4 w-100">
       <BackBtn onClick={onBack} />
-      <div className="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+      <div className="d-flex flex-column flex-sm-row align-items-start justify-content-between gap-3">
         <div>
-          <h2 className="fw-black fs-4 text-dark mb-0">My Schedule</h2>
-          <p className="text-muted small mb-0">1st Semester · 2025–2026</p>
+          <h2 className="fw-black fs-4 text-white mb-0">My Schedule</h2>
+          <p className="text-white-50 small mb-0">1st Semester · 2025–2026</p>
         </div>
         <button onClick={() => onAskJobert(`Today is ${day}. My classes are: ${subjectList}. Can you give me study tips for each subject?`)}
           className="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 flex-shrink-0" style={{ fontSize: 12 }}>🤖 Study tips for today</button>
@@ -265,19 +255,19 @@ function ScheduleView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert
 }
 
 /* ── Tuition View ── */
-function TuitionView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert: (p: string) => void }) {
+function TuitionView({ onBack, onAskJobert, darkMode }: { onBack: () => void; onAskJobert: (p: string) => void; darkMode: boolean }) {
   const total   = fees.reduce((a, f) => a + f.amount, 0);
   const paid    = fees.filter(f => f.paid).reduce((a, f) => a + f.amount, 0);
   const balance = total - paid;
   const unpaidList = fees.filter(f => !f.paid).map(f => f.label).join(", ");
 
   return (
-    <div className="d-flex flex-column gap-4">
+    <div className="d-flex flex-column gap-4 w-100">
       <BackBtn onClick={onBack} />
-      <div className="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+      <div className="d-flex flex-column flex-sm-row align-items-start justify-content-between gap-3">
         <div>
-          <h2 className="fw-black fs-4 text-dark mb-0">Tuition Fee</h2>
-          <p className="text-muted small mb-0">1st Semester · 2025–2026</p>
+          <h2 className="fw-black fs-4 text-white mb-0">Tuition Fee</h2>
+          <p className="text-white-50 small mb-0">1st Semester · 2025–2026</p>
         </div>
         <button onClick={() => onAskJobert(`I have an unpaid balance of ₱${balance.toLocaleString()} for: ${unpaidList}. How do I pay my tuition?`)}
           className="btn btn-outline-primary btn-sm flex-shrink-0" style={{ fontSize: 12 }}>🤖 How do I pay?</button>
@@ -316,103 +306,20 @@ function TuitionView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert:
   );
 }
 
-/* ── Library View ── */
-function LibraryView({ onBack, onAskJobert }: { onBack: () => void; onAskJobert: (p: string) => void }) {
-  const [search, setSearch] = useState("");
-  const borrowed = books.filter(b => !b.available);
-  const filtered = books.filter(b =>
-    b.title.toLowerCase().includes(search.toLowerCase()) ||
-    b.author.toLowerCase().includes(search.toLowerCase())
-  );
-
-  return (
-    <div className="d-flex flex-column gap-4">
-      <BackBtn onClick={onBack} />
-      <div className="d-flex align-items-start justify-content-between gap-3 flex-wrap">
-        <div>
-          <h2 className="fw-black fs-4 text-dark mb-0">Library</h2>
-          <p className="text-muted small mb-0">{books.filter(b => b.available).length} available · {borrowed.length} borrowed</p>
-        </div>
-        <button onClick={() => onAskJobert("What are the library hours? How do I borrow and return books? Are there penalties for late returns?")}
-          className="btn btn-outline-primary btn-sm flex-shrink-0" style={{ fontSize: 12 }}>🤖 Library guide</button>
-      </div>
-
-      {borrowed.length > 0 && (
-        <div className="alert alert-warning rounded-3 py-3">
-          <div className="fw-bold small mb-2">📚 Currently Borrowed</div>
-          {borrowed.map((b, i) => (
-            <div key={i} className="d-flex justify-content-between align-items-center bg-white rounded-3 px-3 py-2 border border-warning-subtle mb-2 last:mb-0">
-              <span className="small fw-medium text-dark">{b.title}</span>
-              <span className="badge bg-danger-subtle text-danger border border-danger-subtle">Due {b.due}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="input-group shadow-sm">
-        <span className="input-group-text bg-white border-end-0">🔍</span>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search books..."
-          className="form-control border-start-0 rounded-end-3" />
-      </div>
-
-      <div className="d-flex flex-column gap-2">
-        {filtered.map((b, i) => (
-          <div key={i} className="card border-0 shadow-sm rounded-3">
-            <div className="card-body p-3 d-flex align-items-center gap-3">
-              <div className="rounded-3 bg-warning-subtle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 44, height: 44, fontSize: 22 }}>📖</div>
-              <div className="flex-grow-1 overflow-hidden">
-                <div className="fw-bold small text-dark text-truncate">{b.title}</div>
-                <div className="text-muted" style={{ fontSize: 11 }}>{b.author} · {b.category}</div>
-              </div>
-              {b.available
-                ? <button className="btn btn-primary btn-sm flex-shrink-0">Borrow</button>
-                : <span className="badge bg-danger-subtle text-danger border border-danger-subtle flex-shrink-0">Due {b.due}</span>
-              }
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="card border-primary border-opacity-25 rounded-3 bg-primary bg-opacity-10">
-        <div className="card-body p-4">
-          <div className="fw-bold small text-dark mb-2">📄 Need a Document?</div>
-          <p className="text-muted small mb-3">Not sure which document to request? Ask JOBERT to guide you.</p>
-          <div className="row g-2">
-            {[
-              { label:"Transcript of Records",    prompt:"How do I request a Transcript of Records (TOR)? What are the steps, requirements, fees, and processing time?" },
-              { label:"Certificate of Enrollment",prompt:"How do I get a Certificate of Enrollment? What do I need to bring and how long does it take?" },
-              { label:"Good Moral Certificate",   prompt:"How do I request a Good Moral Certificate? What are the requirements and processing time?" },
-              { label:"Other Documents",          prompt:"What documents can I request from the Registrar's Office? I need help figuring out which one I need." },
-            ].map(d => (
-              <div key={d.label} className="col-6">
-                <button onClick={() => onAskJobert(d.prompt)}
-                  className="btn btn-outline-primary btn-sm w-100 text-start d-flex align-items-center gap-1" style={{ fontSize: 11 }}>
-                  🤖 {d.label}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* ── Dashboard Home ── */
 const tiles = [
   { id: "grades"   as const, label: "View Grades",   icon: "📊", color: "#1e3a6e" },
   { id: "schedule" as const, label: "View Schedule", icon: "📅", color: "#1e3a6e" },
   { id: "tuition"  as const, label: "Tuition Fee",   icon: "💰", color: "#1e3a6e" },
-  { id: "library"  as const, label: "Library",       icon: "📚", color: "#1e3a6e" },
 ];
 
-function DashboardHome({ setPanel, onAskJobert }: { setPanel: (p: "grades"|"schedule"|"tuition"|"library") => void; onAskJobert: (p: string) => void }) {
+function DashboardHome({ setPanel, onAskJobert, darkMode }: { setPanel: (p: "grades"|"schedule"|"tuition"|"library") => void; onAskJobert: (p: string) => void; darkMode: boolean }) {
   return (
-    <div className="card border-0 shadow-lg rounded-3 overflow-hidden" style={{ maxWidth: 640, width: "100%" }}>
+    <div className="card border-0 shadow-lg rounded-3 overflow-hidden" style={{ maxWidth: 640, width: "100%", background: darkMode ? "#fff" : "#f8fafc" }}>
       {/* Hero banner */}
       <div className="p-5 text-white text-center" style={{ background: "linear-gradient(135deg,#1e3a6e,#2563eb)" }}>
         <div className="fw-black fs-3 mb-1">Welcome, Jamie Santos</div>
-        <div className="text-white-50 small">202400001 · BSCS Year 2 · 2nd Semester SY 2025–2026</div>
+        <div className="text-white-50 small">STU-2024-001 · STEM Grade 11 · 1st Semester SY 2025–2026</div>
         <div className="d-flex justify-content-center gap-2 mt-3 flex-wrap">
           <span className="badge bg-white bg-opacity-20 border border-white border-opacity-25 text-dark px-3 py-2">🎓 Active Student</span>
           <span className="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2">🔔 Enrollment Open</span>
@@ -420,11 +327,30 @@ function DashboardHome({ setPanel, onAskJobert }: { setPanel: (p: "grades"|"sche
       </div>
 
       {/* Service tiles */}
-      <div className="card-body p-4">
-        <p className="text-muted text-uppercase small fw-semibold text-center mb-3" style={{ letterSpacing: "0.08em" }}>Quick Access</p>
-        <div className="row g-3 mb-4">
+      <div className="card-body p-4 position-relative" style={{ overflow: "visible" }}>
+        {/* Glowing logo background */}
+        <div style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 320,
+          height: 320,
+          borderRadius: "50%",
+          backgroundImage: "url('/cfei-logo.jpg')",
+          backgroundSize: "contain",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          opacity: 0.4,
+          zIndex: 0,
+          pointerEvents: "none",
+          animation: "glowRGB 4s ease-in-out infinite"
+        }} />
+        
+        <p className="text-uppercase small fw-semibold text-center mb-3 position-relative" style={{ letterSpacing: "0.08em", zIndex: 1, color: darkMode ? "#6b7280" : "#9ca3af" }}>Quick Access</p>
+        <div className="row g-3 mb-4 position-relative" style={{ zIndex: 1 }}>
           {tiles.map(t => (
-            <div key={t.id} className="col-6">
+            <div key={t.id} className={`${t.id === "tuition" ? "col-12 col-sm-6 mx-auto" : "col-6"}`}>
               <button onClick={() => setPanel(t.id)}
                 className="btn w-100 py-4 d-flex flex-column align-items-center gap-2 rounded-3 text-white fw-bold border-0 shadow-sm"
                 style={{ background: `linear-gradient(145deg,${t.color},#2563eb)`, boxShadow: "0 4px 16px rgba(30,58,110,0.35)", transition: "transform 0.15s" }}
@@ -438,9 +364,9 @@ function DashboardHome({ setPanel, onAskJobert }: { setPanel: (p: "grades"|"sche
         </div>
       </div>
 
-      <div className="card-footer bg-white border-top text-center py-3">
-        <p className="text-muted small mb-1">© 2026 Benedicto College. All rights reserved.</p>
-        <Link href="/login" className="btn btn-outline-primary btn-sm">← Back to Login</Link>
+      <div className="card-footer border-top text-center py-3" style={{ background: darkMode ? "#f9fafb" : "#f3f4f6" }}>
+        <p className="text-muted small mb-1">© 2026 Cebu Far East Institute. All rights reserved.</p>
+        <Link href="/login" className="btn btn-outline-primary btn-sm">↪ Log Out</Link>
       </div>
     </div>
   );
@@ -450,6 +376,7 @@ function DashboardHome({ setPanel, onAskJobert }: { setPanel: (p: "grades"|"sche
 export default function DashboardPage() {
   const [panel, setPanel]               = useState<Panel>("home");
   const [jobertPrompt, setJobertPrompt] = useState<string | undefined>(undefined);
+  const [darkMode, setDarkMode]         = useState(true);
 
   function askJobert(prompt: string) {
     setJobertPrompt(undefined);
@@ -457,12 +384,94 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="kiosk-bg d-flex flex-column align-items-center justify-content-start py-4 px-3" style={{ minHeight: "100vh" }} suppressHydrationWarning>
-      {panel === "home"     && <DashboardHome setPanel={setPanel} onAskJobert={askJobert} />}
-      {panel === "grades"   && <div style={{ width: "100%", maxWidth: 640 }}><GradesView   onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
-      {panel === "schedule" && <div style={{ width: "100%", maxWidth: 640 }}><ScheduleView onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
-      {panel === "tuition"  && <div style={{ width: "100%", maxWidth: 640 }}><TuitionView  onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
-      {panel === "library"  && <div style={{ width: "100%", maxWidth: 640 }}><LibraryView  onBack={() => setPanel("home")} onAskJobert={askJobert} /></div>}
+    <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: "100vh", background: darkMode ? "linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0f172a 50%, #1a1f35 75%, #0f172a 100%)" : "linear-gradient(-45deg, #f0f9ff, #e0f2fe, #f8fafc, #f0f4f8, #e8f4f8, #f0f9ff)", backgroundSize: darkMode ? "auto" : "400% 400%", animation: !darkMode ? "animatedGradient 15s ease infinite" : "none", padding: "20px" }} suppressHydrationWarning>
+      {/* Light mode decorative orbs */}
+      {!darkMode && (
+        <>
+          <div style={{
+            position: "fixed",
+            top: "10%",
+            left: "5%",
+            width: 300,
+            height: 300,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)",
+            filter: "blur(40px)",
+            animation: "floatOrb1 20s ease-in-out infinite",
+            pointerEvents: "none"
+          }} />
+          <div style={{
+            position: "fixed",
+            top: "60%",
+            right: "10%",
+            width: 350,
+            height: 350,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(239, 68, 68, 0.12) 0%, transparent 70%)",
+            filter: "blur(40px)",
+            animation: "floatOrb2 25s ease-in-out infinite",
+            pointerEvents: "none"
+          }} />
+          <div style={{
+            position: "fixed",
+            bottom: "10%",
+            left: "50%",
+            width: 280,
+            height: 280,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%)",
+            filter: "blur(40px)",
+            animation: "floatOrb3 22s ease-in-out infinite",
+            pointerEvents: "none"
+          }} />
+        </>
+      )}
+      
+      {/* Dark Mode Toggle */}
+      <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          className="btn rounded-pill d-flex align-items-center gap-2 fw-bold"
+          style={{
+            background: darkMode ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.6)",
+            color: darkMode ? "#fff" : "#1e40af",
+            border: `2px solid ${darkMode ? "rgba(255,255,255,0.2)" : "rgba(30, 64, 175, 0.2)"}`,
+            padding: "10px 18px",
+            transition: "all 0.3s ease",
+            boxShadow: darkMode ? "0 4px 12px rgba(0,0,0,0.15)" : "0 4px 12px rgba(30, 64, 175, 0.1)"
+          }}
+          title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        >
+          {darkMode ? (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+              <span className="small">Light</span>
+            </>
+          ) : (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+              <span className="small">Dark</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {panel === "home"     && <DashboardHome setPanel={setPanel} onAskJobert={askJobert} darkMode={darkMode} />}
+      {panel === "grades"   && <div style={{ width: "100%", maxWidth: 640 }}><GradesView   onBack={() => setPanel("home")} onAskJobert={askJobert} darkMode={darkMode} /></div>}
+      {panel === "schedule" && <div style={{ width: "100%", maxWidth: 640 }}><ScheduleView onBack={() => setPanel("home")} onAskJobert={askJobert} darkMode={darkMode} /></div>}
+      {panel === "tuition"  && <div style={{ width: "100%", maxWidth: 640 }}><TuitionView  onBack={() => setPanel("home")} onAskJobert={askJobert} darkMode={darkMode} /></div>}
       <JobertChat initialPrompt={jobertPrompt} />
     </div>
   );
