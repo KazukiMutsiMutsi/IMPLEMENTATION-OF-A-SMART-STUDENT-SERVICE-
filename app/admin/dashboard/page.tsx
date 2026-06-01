@@ -707,8 +707,8 @@ function ReportsPanel() {
 
 /* ── Page ── */
 export default function AdminDashboardPage() {
-  const [activeNav, setActiveNav]   = useState("overview");
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeNav, setActiveNav]         = useState("overview");
+  const [mobileOpen, setMobileOpen]       = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
   function renderPanel() {
@@ -725,61 +725,40 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="d-flex" style={{ height:"100vh", overflow:"hidden", background:"#f0f4ff" }} suppressHydrationWarning>
-      <Sidebar active={activeNav} setActive={setActiveNav} show={mobileOpen} setShow={setMobileOpen} onExpandChange={setSidebarExpanded} />
+    <div className="d-flex" style={{ height: "100vh", overflow: "hidden", background: "#f0f4ff" }} suppressHydrationWarning>
+      <Sidebar
+        active={activeNav}
+        setActive={setActiveNav}
+        show={mobileOpen}
+        setShow={setMobileOpen}
+        onExpandChange={setSidebarExpanded}
+      />
 
-      {/* Desktop layout with sidebar margin */}
-      <div className="d-lg-flex d-none flex-column flex-grow-1 overflow-hidden" style={{ marginLeft: "80px", transition: "margin-left 0.3s ease" }}>
+      {/* Main content — margin adjusts with sidebar */}
+      <div
+        className="d-flex flex-column flex-grow-1 overflow-hidden"
+        style={{ marginLeft: sidebarExpanded ? 256 : 80, transition: "margin-left 0.3s ease" }}
+      >
         {/* Topbar */}
         <header className="bg-white border-bottom px-3 px-sm-4 py-3 d-flex align-items-center gap-3 flex-shrink-0 shadow-sm">
-          <button className="btn btn-link text-muted p-1 d-lg-none" onClick={() => setMobileOpen(true)}>
-            <div style={{ width:20, height:2, background:"currentColor", marginBottom:4 }} />
-            <div style={{ width:20, height:2, background:"currentColor", marginBottom:4 }} />
-            <div style={{ width:20, height:2, background:"currentColor" }} />
+          <button className="btn btn-link text-muted p-1 d-lg-none" onClick={() => setMobileOpen(true)} aria-label="Open menu">
+            <div style={{ width: 20, height: 2, background: "currentColor", marginBottom: 4 }} />
+            <div style={{ width: 20, height: 2, background: "currentColor", marginBottom: 4 }} />
+            <div style={{ width: 20, height: 2, background: "currentColor" }} />
           </button>
-          <div className="input-group flex-grow-1" style={{ maxWidth:400 }}>
+          <div className="input-group flex-grow-1" style={{ maxWidth: 400 }}>
             <span className="input-group-text bg-light border-end-0 text-muted">🔍</span>
-            <input type="text" placeholder="Search students, records..." className="form-control bg-light border-start-0" />
+            <input type="text" placeholder="Search students, records..." className="form-control bg-light border-start-0 rounded-end-3" />
           </div>
-          <div className="d-flex align-items-center gap-3 ms-auto">
+          <div className="d-flex align-items-center gap-2 gap-sm-3 ms-auto">
             <span className="badge bg-success-subtle text-success border border-success-subtle d-none d-sm-flex align-items-center gap-1">
-              <span className="rounded-circle bg-success d-inline-block" style={{ width:7, height:7 }} />System Online
+              <span className="rounded-circle bg-success d-inline-block" style={{ width: 7, height: 7 }} />System Online
             </span>
-            <button className="btn btn-link text-muted p-1 position-relative">
-              <span style={{ fontSize:20 }}>🔔</span>
-              <span className="position-absolute top-0 end-0 rounded-circle bg-danger" style={{ width:8, height:8 }} />
+            <button className="btn btn-link text-muted p-1 position-relative" aria-label="Notifications">
+              <span style={{ fontSize: 20 }}>🔔</span>
+              <span className="position-absolute top-0 end-0 rounded-circle bg-danger" style={{ width: 8, height: 8 }} />
             </button>
-            <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style={{ width:32, height:32, fontSize:12, background:"linear-gradient(135deg,#6366f1,#7c3aed)", cursor:"pointer" }}>AD</div>
-          </div>
-        </header>
-
-        <main className="flex-grow-1 overflow-auto p-3 p-sm-4">
-          {renderPanel()}
-        </main>
-      </div>
-
-      {/* Mobile layout without sidebar margin */}
-      <div className="d-flex d-lg-none flex-column flex-grow-1 overflow-hidden">
-        {/* Topbar */}
-        <header className="bg-white border-bottom px-3 px-sm-4 py-3 d-flex align-items-center gap-3 flex-shrink-0 shadow-sm">
-          <button className="btn btn-link text-muted p-1" onClick={() => setMobileOpen(true)}>
-            <div style={{ width:20, height:2, background:"currentColor", marginBottom:4 }} />
-            <div style={{ width:20, height:2, background:"currentColor", marginBottom:4 }} />
-            <div style={{ width:20, height:2, background:"currentColor" }} />
-          </button>
-          <div className="input-group flex-grow-1" style={{ maxWidth:400 }}>
-            <span className="input-group-text bg-light border-end-0 text-muted">🔍</span>
-            <input type="text" placeholder="Search students, records..." className="form-control bg-light border-start-0" />
-          </div>
-          <div className="d-flex align-items-center gap-3 ms-auto">
-            <span className="badge bg-success-subtle text-success border border-success-subtle d-none d-sm-flex align-items-center gap-1">
-              <span className="rounded-circle bg-success d-inline-block" style={{ width:7, height:7 }} />System Online
-            </span>
-            <button className="btn btn-link text-muted p-1 position-relative">
-              <span style={{ fontSize:20 }}>🔔</span>
-              <span className="position-absolute top-0 end-0 rounded-circle bg-danger" style={{ width:8, height:8 }} />
-            </button>
-            <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style={{ width:32, height:32, fontSize:12, background:"linear-gradient(135deg,#6366f1,#7c3aed)", cursor:"pointer" }}>AD</div>
+            <div className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style={{ width: 32, height: 32, fontSize: 12, background: "linear-gradient(135deg,#6366f1,#7c3aed)", cursor: "pointer" }} title="Admin User">AD</div>
           </div>
         </header>
 

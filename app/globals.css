@@ -306,8 +306,53 @@ body {
 
 /* ── Misc helpers ── */
 .font-mono { font-family: "Courier New", monospace; }
-.rounded-xl { border-radius: 0.75rem !important; }
-.rounded-2xl { border-radius: 1rem !important; }
-.rounded-3xl { border-radius: 1.5rem !important; }
+.rounded-xl  { border-radius: 0.75rem !important; }
+.rounded-2xl { border-radius: 1rem    !important; }
+.rounded-3xl { border-radius: 1.5rem  !important; }
 .text-inform { color: var(--inform-blue); }
 .bg-inform   { background-color: var(--inform-blue); }
+
+/* ── Dark-background form inputs ── */
+.kiosk-bg .form-control,
+.kiosk-bg .form-select {
+  background-color: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.15);
+  color: #fff;
+}
+.kiosk-bg .form-control::placeholder { color: rgba(255,255,255,0.35); }
+.kiosk-bg .form-control:focus,
+.kiosk-bg .form-select:focus {
+  background-color: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.35);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+}
+.kiosk-bg .form-select option { background: #1e293b; color: #fff; }
+.kiosk-bg .form-text { color: rgba(255,255,255,0.35) !important; }
+.kiosk-bg .form-label { color: rgba(255,255,255,0.65) !important; }
+
+/* ── White-card form inputs (enrollment page) ── */
+.card .form-control,
+.card .form-select {
+  border-color: #d1d5db;
+  color: #111827;
+}
+.card .form-control:focus,
+.card .form-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+/* ── Scrollbar (thin, subtle) ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+
+/* ── Responsive chat panel ── */
+@media (max-width: 480px) {
+  .chat-panel { width: calc(100vw - 32px); right: 16px; }
+}
+
+/* ── Admin sidebar transition ── */
+.admin-sidebar-transition { transition: width 0.3s ease; }

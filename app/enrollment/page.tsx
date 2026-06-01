@@ -3,788 +3,366 @@
 import { useState } from "react";
 import Link from "next/link";
 
+type FormData = {
+  firstName: string; lastName: string; middleName: string;
+  email: string; phone: string; course: string; year: string;
+  address: string; dateOfBirth: string; studentStatus: string;
+  studentId: string; gender: string; civilStatus: string;
+  nationality: string; religion: string;
+  fatherName: string; fatherOccupation: string;
+  motherName: string; motherOccupation: string;
+  guardianName: string; guardianRelation: string; guardianPhone: string;
+  previousSchool: string; previousSchoolAddress: string; yearsAttended: string;
+  idPhoto: File | null;
+};
+
+const INITIAL: FormData = {
+  firstName:"", lastName:"", middleName:"", email:"", phone:"",
+  course:"", year:"", address:"", dateOfBirth:"", studentStatus:"",
+  studentId:"", gender:"", civilStatus:"", nationality:"", religion:"",
+  fatherName:"", fatherOccupation:"", motherName:"", motherOccupation:"",
+  guardianName:"", guardianRelation:"", guardianPhone:"",
+  previousSchool:"", previousSchoolAddress:"", yearsAttended:"", idPhoto: null,
+};
+
+/* ── Section header ── */
+function SectionHeader({ icon, title }: { icon: string; title: string }) {
+  return (
+    <div className="col-12 mt-2">
+      <div className="d-flex align-items-center gap-2 pb-2 mb-1" style={{ borderBottom: "1px solid #e2e8f0" }}>
+        <span style={{ fontSize: 18 }}>{icon}</span>
+        <span className="fw-bold text-dark small text-uppercase" style={{ letterSpacing: "0.06em" }}>{title}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function EnrollmentPage() {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    course: "",
-    year: "",
-    address: "",
-    dateOfBirth: "",
-    studentStatus: "",
-    studentId: "",
-    middleName: "",
-    gender: "",
-    civilStatus: "",
-    nationality: "",
-    religion: "",
-    fatherName: "",
-    fatherOccupation: "",
-    motherName: "",
-    motherOccupation: "",
-    guardianName: "",
-    guardianRelation: "",
-    guardianPhone: "",
-    previousSchool: "",
-    previousSchoolAddress: "",
-    yearsAttended: "",
-    idPhoto: null as File | null,
-  });
-
-  const [submitted, setSubmitted] = useState(false);
-  const [generatedStudentId, setGeneratedStudentId] = useState("");
-  const [generatedLRN, setGeneratedLRN] = useState("");
-  const [staticPassword, setStaticPassword] = useState("CFEI@2026");
-  const [showTerms, setShowTerms] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
-
-  const handleTermsScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const element = e.currentTarget;
-    const isAtBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + 10;
-    setHasScrolledToBottom(isAtBottom);
-  };
+  const [formData, setFormData] = useState<FormData>(INITIAL);
+  const [submitted, setSubmitted]   = useState(false);
+  const [genId, setGenId]           = useState("");
+  const [genLRN, setGenLRN]         = useState("");
+  const [showTerms, setShowTerms]   = useState(false);
+  const [agreed, setAgreed]         = useState(false);
+  const [scrolled, setScrolled]     = useState(false);
+  const [errors, setErrors]         = useState<Record<string, string>>({});
+  const PASSWORD = "CFEI@2026";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const target = e.target as HTMLInputElement;
     if (target.type === "file") {
       const files = target.files;
-      if (files && files[0]) {
-        setFormData(prev => ({ ...prev, idPhoto: files[0] }));
-      }
+      if (files?.[0]) setFormData(p => ({ ...p, idPhoto: files[0] }));
     } else {
       const { name, value } = target;
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData(p => ({ ...p, [name]: value }));
+      setErrors(p => { const n = { ...p }; delete n[name]; return n; });
     }
+  };
+
+  const validate = (): boolean => {
+    const e: Record<string, string> = {};
+    const req: (keyof FormData)[] = [
+      "firstName","lastName","email","phone","course","year",
+      "address","dateOfBirth","studentStatus","nationality","religion","gender","civilStatus",
+    ];
+    req.forEach(k => { if (!formData[k]?.toString().trim()) e[k] = "This field is required."; });
+    if (formData.studentStatus === "old" && !formData.studentId.trim()) e.studentId = "Student ID is required for returning students.";
+    if (!formData.idPhoto) e.idPhoto = "Please upload a 2×2 ID photo.";
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = "Enter a valid email address.";
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Check if all required fields are filled
-    const requiredFields = {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      phone: formData.phone,
-      course: formData.course,
-      year: formData.year,
-      address: formData.address,
-      dateOfBirth: formData.dateOfBirth,
-      studentStatus: formData.studentStatus,
-      nationality: formData.nationality,
-      religion: formData.religion,
-    };
-    
-    const allFieldsFilled = Object.values(requiredFields).every(field => field && field.toString().trim() !== "");
-    
-    // For old students, Student ID is required
-    if (formData.studentStatus === "old" && !formData.studentId.trim()) {
-      alert("Please enter your Student ID");
-      return;
-    }
-    
-    // Check if ID photo is uploaded
-    if (!formData.idPhoto) {
-      alert("Please upload a 2x2 ID photo");
-      return;
-    }
-    
-    if (!allFieldsFilled) {
-      alert("Please fill in all required fields");
-      return;
-    }
-
-    // Show terms and conditions modal
-    setShowTerms(true);
+    if (validate()) setShowTerms(true);
   };
 
-  const handleConfirmEnrollment = () => {
-    if (!agreedToTerms) {
-      alert("Please agree to the terms and conditions to proceed");
-      return;
-    }
-
-    let studentId = formData.studentId;
-    let lrn = "";
-    
-    // Generate Student ID and LRN only for new students
-    if (formData.studentStatus === "new") {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      const randomNum = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
-      studentId = `STU-${year}${month}${day}${randomNum}`;
-      
-      // Generate LRN (12 digits: YYYYMMDD + 4 random digits)
-      const lrnRandom = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
-      lrn = `${year}${month}${day}${lrnRandom}`;
-    } else {
-      // For old students, generate LRN if not already provided
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      const lrnRandom = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
-      lrn = `${year}${month}${day}${lrnRandom}`;
-    }
-    
-    setGeneratedStudentId(studentId);
-    setGeneratedLRN(lrn);
+  const handleConfirm = () => {
+    if (!agreed) return;
+    const now = new Date();
+    const ymd = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}`;
+    const rand = () => String(Math.floor(Math.random()*10000)).padStart(4,"0");
+    const id = formData.studentStatus === "new" ? `STU-${ymd}${rand()}` : formData.studentId;
+    setGenId(id);
+    setGenLRN(`${ymd}${rand()}`);
     setShowTerms(false);
-    setAgreedToTerms(false);
-    setHasScrolledToBottom(false);
-
-    // Submit enrollment
-    console.log("Enrollment submitted:", { ...formData, studentId, lrn, password: staticPassword });
+    setAgreed(false);
+    setScrolled(false);
     setSubmitted(true);
   };
 
+  /* ── Field helper ── */
+  const F = ({ name, label, type="text", placeholder="", required=false, children }: {
+    name: keyof FormData; label: string; type?: string;
+    placeholder?: string; required?: boolean; children?: React.ReactNode;
+  }) => (
+    <div>
+      <label className="form-label fw-semibold mb-1" style={{ color: "#374151", fontSize: 12 }}>
+        {label}{required && <span className="text-danger ms-1">*</span>}
+      </label>
+      {children ?? (
+        <input
+          type={type} name={name}
+          value={formData[name] as string}
+          onChange={handleChange}
+          placeholder={placeholder}
+          className={`form-control rounded-2 ${errors[name] ? "is-invalid" : ""}`}
+        />
+      )}
+      {errors[name] && <div className="invalid-feedback d-block" style={{ fontSize: 11 }}>{errors[name]}</div>}
+    </div>
+  );
+
+
+  /* ── Success screen ── */
   if (submitted) {
     return (
-      <div className="d-flex flex-column align-items-center justify-content-center px-3 py-5 position-relative" style={{ minHeight: "100vh", background: "linear-gradient(-45deg, #0f172a, #1e3a6e, #1e293b, #0f172a, #1a1f35, #2d3748, #0f172a)", backgroundSize: "400% 400%", animation: "animatedGradient 15s ease infinite" }}>
-        {/* Animated background orbs */}
-        <div style={{
-          position: "absolute",
-          top: "20%",
-          left: "10%",
-          width: 250,
-          height: 250,
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(30, 58, 110, 0.3) 0%, transparent 70%)",
-          filter: "blur(40px)",
-          animation: "floatOrb1 20s ease-in-out infinite",
-          pointerEvents: "none"
-        }} />
-        <div style={{
-          position: "absolute",
-          bottom: "20%",
-          right: "10%",
-          width: 300,
-          height: 300,
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(225, 29, 72, 0.25) 0%, transparent 70%)",
-          filter: "blur(40px)",
-          animation: "floatOrb2 25s ease-in-out infinite",
-          pointerEvents: "none"
-        }} />
-        
-        <div className="card border-0 shadow-lg rounded-3 overflow-hidden position-relative" style={{ maxWidth: 550, width: "100%", zIndex: 10 }}>
-          <div className="card-body p-5 text-center">
-            <div style={{ fontSize: 64, marginBottom: 20 }}>✅</div>
-            <h2 className="fw-black text-success mb-3">Enrollment Successful!</h2>
-            <p className="text-muted mb-4">
-              Your enrollment has been submitted successfully. Please save your credentials below.
-            </p>
-            
-            {/* Enrollment Details */}
-            <div className="alert alert-info mb-4 text-start">
-              <div className="mb-3">
-                <strong>Name:</strong> {formData.firstName} {formData.middleName && formData.middleName + " "}{formData.lastName}
-              </div>
-              <div className="mb-3">
-                <strong>Status:</strong> {formData.studentStatus === "new" ? "New Student" : "Old Student"}
-              </div>
-              <div>
-                <strong>Track:</strong> {formData.course} - Grade {formData.year}
-              </div>
+      <div className="kiosk-bg d-flex flex-column align-items-center justify-content-center px-3 py-5" style={{ minHeight: "100vh" }}>
+        <div className="card border-0 shadow-lg rounded-3 overflow-hidden" style={{ maxWidth: 520, width: "100%", zIndex: 10 }}>
+          <div className="p-4 text-white text-center" style={{ background: "linear-gradient(135deg,#16a34a,#15803d)" }}>
+            <div style={{ fontSize: 56 }}>✅</div>
+            <h2 className="fw-black fs-4 mt-2 mb-0">Enrollment Submitted!</h2>
+          </div>
+          <div className="card-body p-4">
+            <p className="text-muted text-center mb-4">Your enrollment has been received. Save your credentials below.</p>
+
+            <div className="rounded-3 p-3 mb-3" style={{ background: "#f0f9ff", border: "1px solid #bae6fd" }}>
+              <div className="small text-muted mb-1">Name</div>
+              <div className="fw-bold text-dark">{formData.firstName} {formData.middleName && formData.middleName + " "}{formData.lastName}</div>
+              <div className="small text-muted mt-2 mb-1">Track / Grade</div>
+              <div className="fw-semibold text-dark">{formData.course} — Grade {formData.year}</div>
             </div>
 
-            {/* Credentials Box */}
-            <div className="card border-2 border-primary rounded-3 mb-4">
-              <div className="card-body p-4">
-                <h5 className="fw-bold text-primary mb-3">📋 Your Login Credentials</h5>
-                
-                {/* LRN */}
-                <div className="mb-3 p-3 rounded-2" style={{ background: "#f0f4ff", border: "1px solid #bfdbfe" }}>
-                  <div className="text-muted small mb-1">Learner Reference Number (LRN)</div>
-                  <div className="fw-black fs-5 text-primary font-mono">{generatedLRN}</div>
+            <div className="d-flex flex-column gap-2 mb-4">
+              {[
+                { label: "Learner Reference Number (LRN)", value: genLRN,    bg: "#eff6ff", border: "#bfdbfe", color: "#1d4ed8" },
+                { label: "Student ID",                     value: genId,     bg: "#fef2f2", border: "#fecaca", color: "#dc2626" },
+                { label: "Temporary Password",             value: PASSWORD,  bg: "#fffbeb", border: "#fde68a", color: "#d97706" },
+              ].map(c => (
+                <div key={c.label} className="rounded-2 p-3" style={{ background: c.bg, border: `1px solid ${c.border}` }}>
+                  <div className="text-muted small mb-1">{c.label}</div>
+                  <div className="fw-black fs-5 font-mono" style={{ color: c.color }}>{c.value}</div>
                 </div>
-
-                {/* Student ID */}
-                <div className="mb-3 p-3 rounded-2" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
-                  <div className="text-muted small mb-1">Student ID</div>
-                  <div className="fw-black fs-5 text-danger font-mono">{generatedStudentId}</div>
-                </div>
-
-                {/* Password */}
-                <div className="p-3 rounded-2" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
-                  <div className="text-muted small mb-1">Temporary Password</div>
-                  <div className="fw-black fs-5 text-warning font-mono">{staticPassword}</div>
-                </div>
-
-                <small className="text-muted d-block mt-3">
-                  ⚠️ Please save these credentials. You will need them to log in to the system.
-                </small>
-              </div>
+              ))}
             </div>
 
-            {/* Important Notice */}
-            <div className="alert alert-warning mb-4 text-start small">
-              <strong>Important:</strong> Change your password on your first login. Do not share your credentials with anyone.
+            <div className="alert alert-warning small mb-4">
+              <strong>⚠️ Important:</strong> Change your password on first login. Do not share your credentials.
             </div>
 
-            <Link href="/login" className="btn btn-primary btn-lg rounded-2 fw-bold">
-              Go to Login
-            </Link>
+            <Link href="/login" className="btn btn-primary w-100 py-3 rounded-3 fw-bold">Go to Login →</Link>
           </div>
         </div>
       </div>
     );
   }
 
+
   return (
     <>
-      {/* Terms and Conditions Modal */}
+      {/* ── Terms Modal ── */}
       {showTerms && (
-        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center px-3" style={{ background: "rgba(0,0,0,0.5)", zIndex: 9999, overflowY: "auto" }}>
-          <div className="card border-0 shadow-lg rounded-3 overflow-hidden my-4" style={{ maxWidth: 600, width: "100%", maxHeight: "90vh" }}>
-            {/* Header */}
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center px-3"
+          style={{ background: "rgba(0,0,0,0.6)", zIndex: 9999 }}>
+          <div className="card border-0 shadow-lg rounded-3 overflow-hidden" style={{ maxWidth: 580, width: "100%", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
             <div className="p-4 text-white text-center flex-shrink-0" style={{ background: "linear-gradient(135deg,#1e40af,#dc2626)" }}>
-              <h2 className="fw-black fs-5 mb-0">Terms and Conditions</h2>
+              <h2 className="fw-black fs-5 mb-0">📋 Terms and Conditions</h2>
             </div>
-
-            {/* Content - Scrollable */}
-            <div className="card-body p-4" style={{ overflowY: "auto", maxHeight: "calc(90vh - 200px)" }} onScroll={handleTermsScroll}>
-              <div className="mb-4" style={{ fontSize: "0.95rem", lineHeight: 1.6, color: "#333" }}>
-                <h5 className="fw-bold mb-3">TERMS AND CONDITIONS</h5>
-                
-                <p className="mb-3">
-                  <strong>1. ENROLLMENT AGREEMENT</strong><br/>
-                  A pupil or student who withdraws enrollment before or after the beginning of classes must submit a written request stating the reason for withdrawal. The withdrawal of documents must be processed within the school year only after being cleared with accountabilities.
-                </p>
-
-                <p className="mb-3">
-                  <strong>2. REFUND POLICY</strong><br/>
-                  Refund on tuition fees is governed by the Law for Private Schools (Republic No. 64, 1992 Manual of Regulations for Private Schools). Refund of tuition fees shall be made within two weeks after the request for withdrawal is made. The student shall be charged at the school fees in full for the first month of classes. If the student withdraws within the first month, he/she shall be charged fifty percent (50%) of the total monthly dues for the term. If he withdraws within the second week of classes, he shall be charged twenty-five percent (25%) of the total monthly dues.
-                </p>
-
-                <p className="mb-3">
-                  <strong>3. GRADING AND ACADEMIC POLICIES</strong><br/>
-                  Students from Grade 7 to Grade 12 are entitled to free tuition fees and miscellaneous expenses under applicable subsidy programs. However, should the student transfer to another school or go abroad within the school year or grade level, the student shall be required to pay the full cost of tuition fees and miscellaneous expenses for the entire school year.
-                </p>
-
-                <p className="mb-3">
-                  <strong>4. DATA PRIVACY</strong><br/>
-                  I hereby agree to the processing of my personal and sensitive personal data for legitimate school purposes in accordance with the Data Privacy Act of 2012.
-                </p>
-
-                <hr className="my-4" />
-
-                <p className="text-muted small mb-0">
-                  <em>By checking the box below, you acknowledge that you have read and understood these terms and conditions.</em>
-                </p>
-              </div>
+            <div className="card-body p-4 overflow-auto" style={{ flex: 1 }}
+              onScroll={e => {
+                const el = e.currentTarget;
+                if (el.scrollHeight - el.scrollTop <= el.clientHeight + 10) setScrolled(true);
+              }}>
+              <h6 className="fw-bold mb-3">ENROLLMENT TERMS AND CONDITIONS</h6>
+              <p className="small text-muted mb-3"><strong>1. ENROLLMENT AGREEMENT</strong><br />A student who withdraws enrollment before or after the beginning of classes must submit a written request stating the reason. Withdrawal of documents must be processed within the school year only after being cleared of all accountabilities.</p>
+              <p className="small text-muted mb-3"><strong>2. REFUND POLICY</strong><br />Refund on tuition fees is governed by the Law for Private Schools (Republic Act No. 6728, 1992 Manual of Regulations for Private Schools). Refunds shall be made within two weeks after the withdrawal request. The student shall be charged full fees for the first month. Withdrawals within the first week: 90% refund. Second week: 80% refund. Third week: 50% refund. After the third week: no refund.</p>
+              <p className="small text-muted mb-3"><strong>3. ACADEMIC POLICIES</strong><br />Students from Grade 7 to Grade 12 are entitled to free tuition and miscellaneous fees under applicable subsidy programs. Should the student transfer to another school within the school year, the student shall be required to pay the full cost of tuition and miscellaneous fees for the entire school year.</p>
+              <p className="small text-muted mb-3"><strong>4. DATA PRIVACY</strong><br />I hereby agree to the processing of my personal and sensitive personal data for legitimate school purposes in accordance with the Data Privacy Act of 2012 (Republic Act No. 10173).</p>
+              <p className="small text-muted mb-0"><em>By checking the box below, you acknowledge that you have read and understood all terms and conditions.</em></p>
             </div>
-
-            {/* Footer - Fixed */}
             <div className="p-4 border-top bg-light flex-shrink-0">
-              {/* Show checkbox only if scrolled to bottom */}
-              {!hasScrolledToBottom && (
-                <div className="alert alert-info mb-3 small">
-                  📖 Please scroll down to read all terms and conditions
-                </div>
-              )}
-
-              {hasScrolledToBottom && (
-                <>
-                  {/* Checkbox */}
-                  <div className="form-check mb-3">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="agreeTerms"
-                      checked={agreedToTerms}
-                      onChange={(e) => setAgreedToTerms(e.target.checked)}
-                    />
-                    <label className="form-check-label fw-semibold" htmlFor="agreeTerms">
-                      I agree to the terms and conditions above
-                    </label>
-                  </div>
-
-                  {/* Buttons */}
-                  <div className="d-flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowTerms(false);
-                        setAgreedToTerms(false);
-                        setHasScrolledToBottom(false);
-                      }}
-                      className="btn btn-outline-secondary flex-grow-1 rounded-2 fw-bold"
-                    >
-                      Decline
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleConfirmEnrollment}
-                      disabled={!agreedToTerms}
-                      className="btn btn-primary flex-grow-1 rounded-2 fw-bold"
-                      style={{ background: "linear-gradient(135deg, #1e40af, #dc2626)", border: "none" }}
-                    >
-                      Agree & Continue
-                    </button>
-                  </div>
-                </>
-              )}
+              {!scrolled
+                ? <div className="alert alert-info small mb-0">📖 Please scroll down to read all terms before proceeding.</div>
+                : (
+                  <>
+                    <div className="form-check mb-3">
+                      <input className="form-check-input" type="checkbox" id="agreeTerms" checked={agreed} onChange={e => setAgreed(e.target.checked)} />
+                      <label className="form-check-label fw-semibold small" htmlFor="agreeTerms">I have read and agree to the terms and conditions above.</label>
+                    </div>
+                    <div className="d-flex gap-2">
+                      <button type="button" onClick={() => { setShowTerms(false); setAgreed(false); setScrolled(false); }} className="btn btn-outline-secondary flex-grow-1 rounded-3 fw-bold">Decline</button>
+                      <button type="button" onClick={handleConfirm} disabled={!agreed} className="btn flex-grow-1 rounded-3 fw-bold text-white" style={{ background: "linear-gradient(135deg,#1e40af,#dc2626)", border: "none" }}>Agree & Submit</button>
+                    </div>
+                  </>
+                )
+              }
             </div>
           </div>
         </div>
       )}
 
-    <div className="d-flex flex-column align-items-center justify-content-start px-3 py-4 position-relative" style={{ minHeight: "100vh", background: "linear-gradient(-45deg, #0f172a, #1e3a6e, #1e293b, #0f172a, #1a1f35, #2d3748, #0f172a)", backgroundSize: "400% 400%", animation: "animatedGradient 15s ease infinite" }}>
-      {/* Animated background orbs */}
-      <div style={{
-        position: "absolute",
-        top: "10%",
-        left: "5%",
-        width: 300,
-        height: 300,
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(30, 58, 110, 0.3) 0%, transparent 70%)",
-        filter: "blur(40px)",
-        animation: "floatOrb1 20s ease-in-out infinite",
-        pointerEvents: "none"
-      }} />
-      <div style={{
-        position: "absolute",
-        top: "60%",
-        right: "10%",
-        width: 350,
-        height: 350,
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(225, 29, 72, 0.25) 0%, transparent 70%)",
-        filter: "blur(40px)",
-        animation: "floatOrb2 25s ease-in-out infinite",
-        pointerEvents: "none"
-      }} />
-      <div style={{
-        position: "absolute",
-        bottom: "10%",
-        left: "50%",
-        width: 280,
-        height: 280,
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, transparent 70%)",
-        filter: "blur(40px)",
-        animation: "floatOrb3 22s ease-in-out infinite",
-        pointerEvents: "none"
-      }} />
-      
-      <div className="card border-0 shadow-lg rounded-3 overflow-hidden position-relative" style={{ maxWidth: 600, width: "100%", marginTop: 20, zIndex: 10 }}>
-        {/* Header */}
-        <div className="p-4 text-white text-center" style={{ background: "linear-gradient(135deg,#1e40af,#dc2626)" }}>
-          <h1 className="fw-black fs-4 mb-1">Student Enrollment Form</h1>
-          <p className="text-white-50 small mb-0">Complete all fields to enroll for the semester</p>
+
+      {/* ── Main Form ── */}
+      <div className="kiosk-bg d-flex flex-column align-items-center justify-content-start px-3 py-4" style={{ minHeight: "100vh" }}>
+        {/* Back */}
+        <div className="w-100 mb-3" style={{ maxWidth: 680 }}>
+          <Link href="/" className="text-decoration-none d-inline-flex align-items-center gap-1" style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}
+            onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.8)")}
+            onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}>
+            ← Back to Home
+          </Link>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="card-body p-4">
-          <div className="row g-3">
-            {/* Student Status */}
-            <div className="col-12">
-              <label className="form-label fw-semibold text-muted small">Student Status *</label>
-              <select
-                name="studentStatus"
-                value={formData.studentStatus}
-                onChange={handleChange}
-                className="form-select rounded-2"
-                required
-              >
-                <option value="">Select student status</option>
-                <option value="new">New Student</option>
-                <option value="old">Old Student</option>
-              </select>
+        <div className="card border-0 shadow-lg rounded-3 overflow-hidden" style={{ maxWidth: 680, width: "100%", zIndex: 10 }}>
+          {/* Header */}
+          <div className="p-4 text-white text-center" style={{ background: "linear-gradient(135deg,#1e40af,#dc2626)" }}>
+            <div className="d-flex align-items-center justify-content-center gap-3 mb-2">
+              <img src="/cfei-logo.jpg" alt="CFEI" className="rounded-circle" style={{ width: 44, height: 44, objectFit: "cover", border: "2px solid rgba(255,255,255,0.3)" }} />
+              <div className="text-start">
+                <div className="fw-black fs-5 lh-1">INFORM</div>
+                <div className="text-white-50" style={{ fontSize: 11 }}>Cebu Far East Institute</div>
+              </div>
             </div>
+            <h1 className="fw-black fs-4 mb-1">Student Enrollment Form</h1>
+            <p className="text-white-50 small mb-0">Academic Year 2025–2026 · Deadline: June 15, 2026</p>
+          </div>
 
-            {/* Student ID (only for old students) */}
-            {formData.studentStatus === "old" && (
+          {/* Form body */}
+          <form onSubmit={handleSubmit} noValidate className="card-body p-4">
+            <div className="row g-3">
+
+              {/* ── Student Status ── */}
+              <SectionHeader icon="🎓" title="Enrollment Type" />
               <div className="col-12">
-                <label className="form-label fw-semibold text-muted small">Student ID *</label>
-                <input
-                  type="text"
-                  name="studentId"
-                  value={formData.studentId}
-                  onChange={handleChange}
-                  placeholder="Enter your Student ID"
-                  className="form-control rounded-2"
-                  required
-                />
+                <F name="studentStatus" label="Student Status" required>
+                  <select name="studentStatus" value={formData.studentStatus} onChange={handleChange}
+                    className={`form-select rounded-2 ${errors.studentStatus ? "is-invalid" : ""}`}>
+                    <option value="">Select student status</option>
+                    <option value="new">New Student</option>
+                    <option value="old">Returning / Old Student</option>
+                  </select>
+                </F>
               </div>
-            )}
-
-            {/* First Name */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">First Name *</label>
-              <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                placeholder="First name"
-                className="form-control rounded-2"
-                required
-              />
-            </div>
-
-            {/* Last Name */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Last Name *</label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                placeholder="Last name"
-                className="form-control rounded-2"
-                required
-              />
-            </div>
-
-            {/* Middle Name */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Middle Name</label>
-              <input
-                type="text"
-                name="middleName"
-                value={formData.middleName}
-                onChange={handleChange}
-                placeholder="Middle name"
-                className="form-control rounded-2"
-              />
-            </div>
-
-            {/* Gender */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Gender *</label>
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                className="form-select rounded-2"
-                required
-              >
-                <option value="">Select gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            {/* Civil Status */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Civil Status *</label>
-              <select
-                name="civilStatus"
-                value={formData.civilStatus}
-                onChange={handleChange}
-                className="form-select rounded-2"
-                required
-              >
-                <option value="">Select civil status</option>
-                <option value="Single">Single</option>
-                <option value="Married">Married</option>
-                <option value="Widowed">Widowed</option>
-                <option value="Separated">Separated</option>
-              </select>
-            </div>
-
-            {/* Email */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Email *</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="your.email@example.com"
-                className="form-control rounded-2"
-                required
-              />
-            </div>
-
-            {/* Phone */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Phone Number *</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+63 9XX XXX XXXX"
-                className="form-control rounded-2"
-                required
-              />
-            </div>
-
-            {/* Track */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Track *</label>
-              <select
-                name="course"
-                value={formData.course}
-                onChange={handleChange}
-                className="form-select rounded-2"
-                required
-              >
-                <option value="">Select a track</option>
-                <option value="TVL">Technical-Vocational-Livelihood (TVL)</option>
-                <option value="STEM">Science, Technology, Engineering, Mathematics (STEM)</option>
-                <option value="GAS">General Academic Strand (GAS)</option>
-                <option value="HUMMS">Humanities and Social Sciences (HUMMS)</option>
-                <option value="ABM">Accountancy, Business, and Management (ABM)</option>
-              </select>
-            </div>
-
-            {/* Grade Level */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Grade Level *</label>
-              <select
-                name="year"
-                value={formData.year}
-                onChange={handleChange}
-                className="form-select rounded-2"
-                required
-              >
-                <option value="">Select grade level</option>
-                <option value="11">Grade 11</option>
-                <option value="12">Grade 12</option>
-              </select>
-            </div>
-
-            {/* Date of Birth */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Date of Birth *</label>
-              <input
-                type="date"
-                name="dateOfBirth"
-                value={formData.dateOfBirth}
-                onChange={handleChange}
-                className="form-control rounded-2"
-                required
-              />
-            </div>
-
-            {/* Address */}
-            <div className="col-12">
-              <label className="form-label fw-semibold text-muted small">Address *</label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                placeholder="Street address, city, province"
-                className="form-control rounded-2"
-                required
-              />
-            </div>
-
-            {/* Nationality */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Nationality *</label>
-              <input
-                type="text"
-                name="nationality"
-                value={formData.nationality}
-                onChange={handleChange}
-                placeholder="e.g., Filipino"
-                className="form-control rounded-2"
-                required
-              />
-            </div>
-
-            {/* Religion */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Religion *</label>
-              <input
-                type="text"
-                name="religion"
-                value={formData.religion}
-                onChange={handleChange}
-                placeholder="e.g., Roman Catholic"
-                className="form-control rounded-2"
-                required
-              />
-            </div>
-
-            {/* Father's Name */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Father's Name</label>
-              <input
-                type="text"
-                name="fatherName"
-                value={formData.fatherName}
-                onChange={handleChange}
-                placeholder="Father's full name"
-                className="form-control rounded-2"
-              />
-            </div>
-
-            {/* Father's Occupation */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Father's Occupation</label>
-              <input
-                type="text"
-                name="fatherOccupation"
-                value={formData.fatherOccupation}
-                onChange={handleChange}
-                placeholder="Father's occupation"
-                className="form-control rounded-2"
-              />
-            </div>
-
-            {/* Mother's Name */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Mother's Name</label>
-              <input
-                type="text"
-                name="motherName"
-                value={formData.motherName}
-                onChange={handleChange}
-                placeholder="Mother's full name"
-                className="form-control rounded-2"
-              />
-            </div>
-
-            {/* Mother's Occupation */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Mother's Occupation</label>
-              <input
-                type="text"
-                name="motherOccupation"
-                value={formData.motherOccupation}
-                onChange={handleChange}
-                placeholder="Mother's occupation"
-                className="form-control rounded-2"
-              />
-            </div>
-
-            {/* Guardian Name */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Guardian Name</label>
-              <input
-                type="text"
-                name="guardianName"
-                value={formData.guardianName}
-                onChange={handleChange}
-                placeholder="Guardian's full name"
-                className="form-control rounded-2"
-              />
-            </div>
-
-            {/* Guardian Relation */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Guardian Relation</label>
-              <input
-                type="text"
-                name="guardianRelation"
-                value={formData.guardianRelation}
-                onChange={handleChange}
-                placeholder="e.g., Aunt, Uncle, Grandparent"
-                className="form-control rounded-2"
-              />
-            </div>
-
-            {/* Guardian Phone */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Guardian Phone</label>
-              <input
-                type="tel"
-                name="guardianPhone"
-                value={formData.guardianPhone}
-                onChange={handleChange}
-                placeholder="+63 9XX XXX XXXX"
-                className="form-control rounded-2"
-              />
-            </div>
-
-            {/* Previous School */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Previous School</label>
-              <input
-                type="text"
-                name="previousSchool"
-                value={formData.previousSchool}
-                onChange={handleChange}
-                placeholder="Name of previous school"
-                className="form-control rounded-2"
-              />
-            </div>
-
-            {/* Previous School Address */}
-            <div className="col-12">
-              <label className="form-label fw-semibold text-muted small">Previous School Address</label>
-              <input
-                type="text"
-                name="previousSchoolAddress"
-                value={formData.previousSchoolAddress}
-                onChange={handleChange}
-                placeholder="Address of previous school"
-                className="form-control rounded-2"
-              />
-            </div>
-
-            {/* Years Attended */}
-            <div className="col-md-6">
-              <label className="form-label fw-semibold text-muted small">Years Attended</label>
-              <input
-                type="text"
-                name="yearsAttended"
-                value={formData.yearsAttended}
-                onChange={handleChange}
-                placeholder="e.g., 2020-2024"
-                className="form-control rounded-2"
-              />
-            </div>
-
-            {/* 2x2 ID Photo */}
-            <div className="col-12">
-              <label className="form-label fw-semibold text-muted small">2x2 ID Photo *</label>
-              <div className="position-relative">
-                <input
-                  type="file"
-                  name="idPhoto"
-                  onChange={handleChange}
-                  accept="image/*"
-                  className="form-control rounded-2"
-                  required
-                />
-                <small className="form-text text-muted d-block mt-2">
-                  Upload a 2x2 inch ID photo (JPG, PNG). Max size: 5MB
-                </small>
-              </div>
-              {formData.idPhoto && (
-                <div className="mt-3">
-                  <div className="text-success small mb-2">✓ File selected: {formData.idPhoto.name}</div>
-                  <img 
-                    src={URL.createObjectURL(formData.idPhoto)} 
-                    alt="ID Preview" 
-                    className="rounded-2"
-                    style={{ maxWidth: "150px", maxHeight: "150px", objectFit: "cover" }}
-                  />
+              {formData.studentStatus === "old" && (
+                <div className="col-12">
+                  <F name="studentId" label="Existing Student ID" placeholder="e.g. STU-20240001" required />
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* Submit Button */}
-          <div className="d-flex gap-2 mt-4">
-            <button
-              type="submit"
-              className="btn btn-primary btn-lg flex-grow-1 rounded-2 fw-bold"
-            >
-              Submit Enrollment
-            </button>
-            <Link href="/" className="btn btn-outline-secondary btn-lg rounded-2 fw-bold">
-              Cancel
-            </Link>
-          </div>
-        </form>
+              {/* ── Personal Info ── */}
+              <SectionHeader icon="👤" title="Personal Information" />
+              <div className="col-md-4"><F name="firstName"  label="First Name"  placeholder="First name"  required /></div>
+              <div className="col-md-4"><F name="middleName" label="Middle Name" placeholder="Middle name (optional)" /></div>
+              <div className="col-md-4"><F name="lastName"   label="Last Name"   placeholder="Last name"   required /></div>
+
+              <div className="col-md-6">
+                <F name="gender" label="Gender" required>
+                  <select name="gender" value={formData.gender} onChange={handleChange}
+                    className={`form-select rounded-2 ${errors.gender ? "is-invalid" : ""}`}>
+                    <option value="">Select gender</option>
+                    <option>Male</option><option>Female</option><option>Other</option>
+                  </select>
+                </F>
+              </div>
+              <div className="col-md-6">
+                <F name="civilStatus" label="Civil Status" required>
+                  <select name="civilStatus" value={formData.civilStatus} onChange={handleChange}
+                    className={`form-select rounded-2 ${errors.civilStatus ? "is-invalid" : ""}`}>
+                    <option value="">Select civil status</option>
+                    <option>Single</option><option>Married</option><option>Widowed</option><option>Separated</option>
+                  </select>
+                </F>
+              </div>
+
+              <div className="col-md-6"><F name="dateOfBirth" label="Date of Birth" type="date" required /></div>
+              <div className="col-md-6"><F name="nationality" label="Nationality" placeholder="e.g. Filipino" required /></div>
+              <div className="col-md-6"><F name="religion"    label="Religion"    placeholder="e.g. Roman Catholic" required /></div>
+              <div className="col-12">  <F name="address"     label="Home Address" placeholder="Street, Barangay, City, Province" required /></div>
+
+
+              {/* ── Contact ── */}
+              <SectionHeader icon="📞" title="Contact Information" />
+              <div className="col-md-6"><F name="email" label="Email Address" type="email" placeholder="your.email@example.com" required /></div>
+              <div className="col-md-6"><F name="phone" label="Phone Number"  type="tel"   placeholder="+63 9XX XXX XXXX" required /></div>
+
+              {/* ── Academic ── */}
+              <SectionHeader icon="📚" title="Academic Information" />
+              <div className="col-md-6">
+                <F name="course" label="Track / Strand" required>
+                  <select name="course" value={formData.course} onChange={handleChange}
+                    className={`form-select rounded-2 ${errors.course ? "is-invalid" : ""}`}>
+                    <option value="">Select a track</option>
+                    <option value="TVL">Technical-Vocational-Livelihood (TVL)</option>
+                    <option value="STEM">Science, Technology, Engineering, Mathematics (STEM)</option>
+                    <option value="GAS">General Academic Strand (GAS)</option>
+                    <option value="HUMMS">Humanities and Social Sciences (HUMMS)</option>
+                    <option value="ABM">Accountancy, Business, and Management (ABM)</option>
+                  </select>
+                </F>
+              </div>
+              <div className="col-md-6">
+                <F name="year" label="Grade Level" required>
+                  <select name="year" value={formData.year} onChange={handleChange}
+                    className={`form-select rounded-2 ${errors.year ? "is-invalid" : ""}`}>
+                    <option value="">Select grade level</option>
+                    <option value="11">Grade 11</option>
+                    <option value="12">Grade 12</option>
+                  </select>
+                </F>
+              </div>
+              <div className="col-md-6"><F name="previousSchool"        label="Previous School"         placeholder="Name of previous school" /></div>
+              <div className="col-md-6"><F name="yearsAttended"         label="Years Attended"          placeholder="e.g. 2022–2024" /></div>
+              <div className="col-12">  <F name="previousSchoolAddress" label="Previous School Address" placeholder="Address of previous school" /></div>
+
+              {/* ── Family ── */}
+              <SectionHeader icon="👨‍👩‍👧" title="Family Information" />
+              <div className="col-md-6"><F name="fatherName"       label="Father's Full Name"   placeholder="Father's full name" /></div>
+              <div className="col-md-6"><F name="fatherOccupation" label="Father's Occupation"  placeholder="e.g. Engineer" /></div>
+              <div className="col-md-6"><F name="motherName"       label="Mother's Full Name"   placeholder="Mother's full name" /></div>
+              <div className="col-md-6"><F name="motherOccupation" label="Mother's Occupation"  placeholder="e.g. Teacher" /></div>
+              <div className="col-md-4"><F name="guardianName"     label="Guardian Name"        placeholder="Guardian's full name" /></div>
+              <div className="col-md-4"><F name="guardianRelation" label="Guardian Relation"    placeholder="e.g. Aunt, Uncle" /></div>
+              <div className="col-md-4"><F name="guardianPhone"    label="Guardian Phone"       placeholder="+63 9XX XXX XXXX" type="tel" /></div>
+
+              {/* ── ID Photo ── */}
+              <SectionHeader icon="📷" title="ID Photo" />
+              <div className="col-12">
+                <label className="form-label fw-semibold mb-1" style={{ color: "#374151", fontSize: 12 }}>
+                  2×2 ID Photo <span className="text-danger">*</span>
+                </label>
+                <input type="file" name="idPhoto" accept="image/*" onChange={handleChange}
+                  className={`form-control rounded-2 ${errors.idPhoto ? "is-invalid" : ""}`} />
+                <div className="form-text text-muted" style={{ fontSize: 11 }}>JPG or PNG · max 5 MB · white background preferred</div>
+                {errors.idPhoto && <div className="invalid-feedback d-block" style={{ fontSize: 11 }}>{errors.idPhoto}</div>}
+                {formData.idPhoto && (
+                  <div className="mt-3 d-flex align-items-center gap-3">
+                    <img src={URL.createObjectURL(formData.idPhoto)} alt="Preview"
+                      className="rounded-2 border" style={{ width: 80, height: 80, objectFit: "cover" }} />
+                    <div>
+                      <div className="text-success small fw-semibold">✓ {formData.idPhoto.name}</div>
+                      <div className="text-muted" style={{ fontSize: 11 }}>{(formData.idPhoto.size / 1024).toFixed(0)} KB</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </div>{/* end row */}
+
+            {/* Submit */}
+            <div className="d-flex gap-3 mt-4 pt-2 border-top">
+              <Link href="/" className="btn btn-outline-secondary flex-shrink-0 rounded-3 fw-bold px-4">Cancel</Link>
+              <button type="submit" className="btn flex-grow-1 py-3 rounded-3 fw-bold text-white fs-6"
+                style={{ background: "linear-gradient(135deg,#1e40af,#dc2626)", border: "none", boxShadow: "0 4px 16px rgba(30,64,175,0.3)" }}>
+                Review & Submit Enrollment
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <p className="mt-4" style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>© 2026 Cebu Far East Institute. All rights reserved.</p>
       </div>
-    </div>
     </>
   );
 }

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import type React from "react";
 import Link from "next/link";
 
-type Panel = "home" | "grades" | "schedule" | "tuition";
+type Panel = "home" | "grades" | "schedule" | "tuition" | "library";
 type JMsg  = { role: "ai" | "user"; text: string; feedback?: "up" | "down" | null };
 
 /* ── JOBERT Chat ── */
@@ -306,23 +306,77 @@ function TuitionView({ onBack, onAskJobert, darkMode }: { onBack: () => void; on
   );
 }
 
-/* ── Dashboard Home ── */
+/* ── Library View ── */
+function LibraryView({ onBack, darkMode }: { onBack: () => void; darkMode: boolean }) {
+  const books = [
+    { title: "Calculus: Early Transcendentals", author: "James Stewart",     category: "Mathematics", available: 3, total: 5 },
+    { title: "Conceptual Physics",              author: "Paul G. Hewitt",    category: "Physics",     available: 1, total: 4 },
+    { title: "Complete Works of Shakespeare",   author: "W. Shakespeare",    category: "Literature",  available: 6, total: 6 },
+    { title: "Chemistry: The Central Science",  author: "Brown & LeMay",     category: "Chemistry",   available: 4, total: 4 },
+    { title: "Introduction to Algorithms",      author: "Cormen et al.",     category: "CS",          available: 5, total: 5 },
+    { title: "Sapiens: A Brief History",        author: "Yuval Noah Harari", category: "History",     available: 1, total: 3 },
+  ];
+  return (
+    <div className="d-flex flex-column gap-4 w-100">
+      <BackBtn onClick={onBack} />
+      <div>
+        <h2 className="fw-black fs-4 text-white mb-0">Library</h2>
+        <p className="text-white-50 small mb-0">{books.length} titles available</p>
+      </div>
+      <div className="row g-3">
+        {[
+          { label: "Total Copies", value: books.reduce((a, b) => a + b.total, 0),     cls: "bg-primary-subtle border-primary-subtle text-primary" },
+          { label: "Available",    value: books.reduce((a, b) => a + b.available, 0), cls: "bg-success-subtle border-success-subtle text-success" },
+          { label: "Borrowed",     value: books.reduce((a, b) => a + (b.total - b.available), 0), cls: "bg-warning-subtle border-warning-subtle text-warning" },
+        ].map(s => (
+          <div key={s.label} className="col-4">
+            <div className={`card border rounded-3 ${s.cls}`}>
+              <div className="card-body p-3 text-center">
+                <div className="text-muted small mb-1">{s.label}</div>
+                <div className="fw-black fs-3">{s.value}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="d-flex flex-column gap-2">
+        {books.map((b, i) => (
+          <div key={i} className="card border-0 shadow-sm rounded-3">
+            <div className="card-body p-3 d-flex align-items-center gap-3">
+              <div className="rounded-3 bg-primary bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: 44, height: 44, fontSize: 22 }}>📖</div>
+              <div className="flex-grow-1 overflow-hidden">
+                <div className="fw-bold small text-dark text-truncate">{b.title}</div>
+                <div className="text-muted" style={{ fontSize: 11 }}>{b.author} · {b.category}</div>
+              </div>
+              <span className={`badge flex-shrink-0 ${b.available > 0 ? "bg-success-subtle text-success border border-success-subtle" : "bg-danger-subtle text-danger border border-danger-subtle"}`}>
+                {b.available}/{b.total}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
 const tiles = [
   { id: "grades"   as const, label: "View Grades",   icon: "📊", color: "#1e3a6e" },
   { id: "schedule" as const, label: "View Schedule", icon: "📅", color: "#1e3a6e" },
   { id: "tuition"  as const, label: "Tuition Fee",   icon: "💰", color: "#1e3a6e" },
+  { id: "library"  as const, label: "Library",       icon: "📚", color: "#1e3a6e" },
 ];
 
 function DashboardHome({ setPanel, onAskJobert, darkMode }: { setPanel: (p: "grades"|"schedule"|"tuition"|"library") => void; onAskJobert: (p: string) => void; darkMode: boolean }) {
   return (
-    <div className="card border-0 shadow-lg rounded-3 overflow-hidden" style={{ maxWidth: 640, width: "100%", background: darkMode ? "#fff" : "#f8fafc" }}>
+    <div className="card border-0 shadow-lg rounded-3 overflow-hidden" style={{ maxWidth: 640, width: "100%", background: darkMode ? "rgba(255,255,255,0.05)" : "#f8fafc", border: darkMode ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e2e8f0" }}>
       {/* Hero banner */}
-      <div className="p-5 text-white text-center" style={{ background: "linear-gradient(135deg,#1e3a6e,#2563eb)" }}>
+      <div className="p-4 p-md-5 text-white text-center" style={{ background: "linear-gradient(135deg,#1e3a6e,#2563eb)" }}>
         <div className="fw-black fs-3 mb-1">Welcome, Jamie Santos</div>
-        <div className="text-white-50 small">STU-2024-001 · STEM Grade 11 · 1st Semester SY 2025–2026</div>
-        <div className="d-flex justify-content-center gap-2 mt-3 flex-wrap">
-          <span className="badge bg-white bg-opacity-20 border border-white border-opacity-25 text-dark px-3 py-2">🎓 Active Student</span>
-          <span className="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2">🔔 Enrollment Open</span>
+        <div className="text-white-50 small mb-3">STU-2024-001 · STEM Grade 11 · 1st Semester SY 2025–2026</div>
+        <div className="d-flex justify-content-center gap-2 flex-wrap">
+          <span className="badge px-3 py-2" style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff" }}>🎓 Active Student</span>
+          <span className="badge px-3 py-2" style={{ background: "rgba(245,158,11,0.2)", border: "1px solid rgba(245,158,11,0.4)", color: "#fde68a" }}>🔔 Enrollment Open</span>
         </div>
       </div>
 
@@ -330,33 +384,27 @@ function DashboardHome({ setPanel, onAskJobert, darkMode }: { setPanel: (p: "gra
       <div className="card-body p-4 position-relative" style={{ overflow: "visible" }}>
         {/* Glowing logo background */}
         <div style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
+          position: "absolute", top: "50%", left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 320,
-          height: 320,
-          borderRadius: "50%",
+          width: 280, height: 280, borderRadius: "50%",
           backgroundImage: "url('/cfei-logo.jpg')",
-          backgroundSize: "contain",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "center",
-          opacity: 0.4,
-          zIndex: 0,
-          pointerEvents: "none",
+          backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "center",
+          opacity: 0.35, zIndex: 0, pointerEvents: "none",
           animation: "glowRGB 4s ease-in-out infinite"
         }} />
-        
-        <p className="text-uppercase small fw-semibold text-center mb-3 position-relative" style={{ letterSpacing: "0.08em", zIndex: 1, color: darkMode ? "#6b7280" : "#9ca3af" }}>Quick Access</p>
-        <div className="row g-3 mb-4 position-relative" style={{ zIndex: 1 }}>
+
+        <p className="text-uppercase small fw-semibold text-center mb-3 position-relative" style={{ letterSpacing: "0.08em", zIndex: 1, color: darkMode ? "rgba(255,255,255,0.4)" : "#9ca3af" }}>Quick Access</p>
+        <div className="row g-3 mb-0 position-relative" style={{ zIndex: 1 }}>
           {tiles.map(t => (
-            <div key={t.id} className={`${t.id === "tuition" ? "col-12 col-sm-6 mx-auto" : "col-6"}`}>
-              <button onClick={() => setPanel(t.id)}
+            <div key={t.id} className="col-6">
+              <button
+                onClick={() => setPanel(t.id)}
                 className="btn w-100 py-4 d-flex flex-column align-items-center gap-2 rounded-3 text-white fw-bold border-0 shadow-sm"
                 style={{ background: `linear-gradient(145deg,${t.color},#2563eb)`, boxShadow: "0 4px 16px rgba(30,58,110,0.35)", transition: "transform 0.15s" }}
                 onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.03)")}
-                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}>
-                <span style={{ fontSize: 32 }}>{t.icon}</span>
+                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+              >
+                <span style={{ fontSize: 30 }}>{t.icon}</span>
                 <span className="small">{t.label}</span>
               </button>
             </div>
@@ -364,9 +412,9 @@ function DashboardHome({ setPanel, onAskJobert, darkMode }: { setPanel: (p: "gra
         </div>
       </div>
 
-      <div className="card-footer border-top text-center py-3" style={{ background: darkMode ? "#f9fafb" : "#f3f4f6" }}>
-        <p className="text-muted small mb-1">© 2026 Cebu Far East Institute. All rights reserved.</p>
-        <Link href="/login" className="btn btn-outline-primary btn-sm">↪ Log Out</Link>
+      <div className="card-footer border-top text-center py-3" style={{ background: darkMode ? "rgba(255,255,255,0.03)" : "#f3f4f6", borderColor: darkMode ? "rgba(255,255,255,0.08) !important" : undefined }}>
+        <p className="mb-2" style={{ color: darkMode ? "rgba(255,255,255,0.3)" : "#9ca3af", fontSize: 12 }}>© 2026 Cebu Far East Institute. All rights reserved.</p>
+        <Link href="/login" className="btn btn-sm btn-outline-danger rounded-3">↪ Log Out</Link>
       </div>
     </div>
   );
@@ -384,85 +432,59 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: "100vh", background: darkMode ? "linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0f172a 50%, #1a1f35 75%, #0f172a 100%)" : "linear-gradient(-45deg, #f0f9ff, #e0f2fe, #f8fafc, #f0f4f8, #e8f4f8, #f0f9ff)", backgroundSize: darkMode ? "auto" : "400% 400%", animation: !darkMode ? "animatedGradient 15s ease infinite" : "none", padding: "20px" }} suppressHydrationWarning>
+    <div
+      className="d-flex flex-column align-items-center justify-content-center"
+      style={{
+        minHeight: "100vh",
+        background: darkMode
+          ? "linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #0f172a 50%, #1a1f35 75%, #0f172a 100%)"
+          : "linear-gradient(-45deg, #f0f9ff, #e0f2fe, #f8fafc, #f0f4f8)",
+        backgroundSize: darkMode ? "auto" : "400% 400%",
+        animation: !darkMode ? "animatedGradient 15s ease infinite" : "none",
+        padding: "20px",
+      }}
+      suppressHydrationWarning
+    >
       {/* Light mode decorative orbs */}
       {!darkMode && (
         <>
-          <div style={{
-            position: "fixed",
-            top: "10%",
-            left: "5%",
-            width: 300,
-            height: 300,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)",
-            filter: "blur(40px)",
-            animation: "floatOrb1 20s ease-in-out infinite",
-            pointerEvents: "none"
-          }} />
-          <div style={{
-            position: "fixed",
-            top: "60%",
-            right: "10%",
-            width: 350,
-            height: 350,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(239, 68, 68, 0.12) 0%, transparent 70%)",
-            filter: "blur(40px)",
-            animation: "floatOrb2 25s ease-in-out infinite",
-            pointerEvents: "none"
-          }} />
-          <div style={{
-            position: "fixed",
-            bottom: "10%",
-            left: "50%",
-            width: 280,
-            height: 280,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%)",
-            filter: "blur(40px)",
-            animation: "floatOrb3 22s ease-in-out infinite",
-            pointerEvents: "none"
-          }} />
+          <div style={{ position: "fixed", top: "10%", left: "5%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)", filter: "blur(40px)", animation: "floatOrb1 20s ease-in-out infinite", pointerEvents: "none" }} />
+          <div style={{ position: "fixed", top: "60%", right: "10%", width: 350, height: 350, borderRadius: "50%", background: "radial-gradient(circle, rgba(239,68,68,0.12) 0%, transparent 70%)", filter: "blur(40px)", animation: "floatOrb2 25s ease-in-out infinite", pointerEvents: "none" }} />
+          <div style={{ position: "fixed", bottom: "10%", left: "50%", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(251,191,36,0.1) 0%, transparent 70%)", filter: "blur(40px)", animation: "floatOrb3 22s ease-in-out infinite", pointerEvents: "none" }} />
         </>
       )}
-      
+
       {/* Dark Mode Toggle */}
-      <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 1000 }}>
+      <div style={{ position: "fixed", top: 16, right: 16, zIndex: 1000 }}>
         <button
           onClick={() => setDarkMode(!darkMode)}
-          className="btn rounded-pill d-flex align-items-center gap-2 fw-bold"
+          className="btn rounded-pill d-flex align-items-center gap-2 fw-semibold"
           style={{
-            background: darkMode ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.6)",
+            background: darkMode ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.7)",
             color: darkMode ? "#fff" : "#1e40af",
-            border: `2px solid ${darkMode ? "rgba(255,255,255,0.2)" : "rgba(30, 64, 175, 0.2)"}`,
-            padding: "10px 18px",
-            transition: "all 0.3s ease",
-            boxShadow: darkMode ? "0 4px 12px rgba(0,0,0,0.15)" : "0 4px 12px rgba(30, 64, 175, 0.1)"
+            border: `1px solid ${darkMode ? "rgba(255,255,255,0.15)" : "rgba(30,64,175,0.2)"}`,
+            padding: "8px 16px",
+            fontSize: 13,
+            backdropFilter: "blur(10px)",
           }}
           title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
           {darkMode ? (
             <>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="5"/>
-                <line x1="12" y1="1" x2="12" y2="3"/>
-                <line x1="12" y1="21" x2="12" y2="23"/>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                <line x1="1" y1="12" x2="3" y2="12"/>
-                <line x1="21" y1="12" x2="23" y2="12"/>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
               </svg>
-              <span className="small">Light</span>
+              Light
             </>
           ) : (
             <>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
               </svg>
-              <span className="small">Dark</span>
+              Dark
             </>
           )}
         </button>
@@ -472,6 +494,7 @@ export default function DashboardPage() {
       {panel === "grades"   && <div style={{ width: "100%", maxWidth: 640 }}><GradesView   onBack={() => setPanel("home")} onAskJobert={askJobert} darkMode={darkMode} /></div>}
       {panel === "schedule" && <div style={{ width: "100%", maxWidth: 640 }}><ScheduleView onBack={() => setPanel("home")} onAskJobert={askJobert} darkMode={darkMode} /></div>}
       {panel === "tuition"  && <div style={{ width: "100%", maxWidth: 640 }}><TuitionView  onBack={() => setPanel("home")} onAskJobert={askJobert} darkMode={darkMode} /></div>}
+      {panel === "library"  && <div style={{ width: "100%", maxWidth: 640 }}><LibraryView  onBack={() => setPanel("home")} darkMode={darkMode} /></div>}
       <JobertChat initialPrompt={jobertPrompt} />
     </div>
   );
